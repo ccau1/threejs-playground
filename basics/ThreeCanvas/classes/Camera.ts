@@ -152,17 +152,18 @@ export default class Camera {
   paneDelta(x: number, y: number) {
     const damper = 100 / this.speed;
 
+    const originalPos = { ...this.camera.position };
+
+    this.camera.translateX(-x / this.zoom / damper);
+    this.camera.translateZ(-y / this.zoom / damper);
+    this.camera.position.y = originalPos.y;
     this.setPosition({
-      position: movePosition(
-        this.position,
-        { x: x / this.zoom / damper, y: -y / this.zoom / damper },
-        this.camera.rotation.z,
-      ),
-      lookAt: movePosition(
-        this.lookAt,
-        { x: x / this.zoom / damper, y: -y / this.zoom / damper },
-        this.camera.rotation.z,
-      ),
+      position: this.camera.position,
+      lookAt: {
+        x: this.lookAt.x - (originalPos.x - this.camera.position.x),
+        y: this.lookAt.y,
+        z: this.lookAt.z - (originalPos.z - this.camera.position.z),
+      },
     });
   }
 

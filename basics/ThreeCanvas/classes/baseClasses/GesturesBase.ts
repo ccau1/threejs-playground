@@ -29,7 +29,7 @@ export default class GesturesBase {
   paneCamera(summary: TouchSummary) {
     this.world
       .getCamera()
-      .paneDelta(summary.dragDeltaInterval.x, -summary.dragDeltaInterval.y);
+      .paneDelta(summary.dragDeltaInterval.x, summary.dragDeltaInterval.y);
   }
 
   rotateCamera(summary: TouchSummary, cameraEndpoint: CameraEndpoint) {
