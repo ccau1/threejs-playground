@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { movePosition, rotateEndpoint } from "../math";
+import { rotateEndpoint } from "../math";
 import World from "./World";
 import TWEEN from "@tweenjs/tween.js";
 
@@ -172,20 +172,21 @@ export default class Camera {
   }
 
   rotateDelta(delta: Position2D, cameraEndpoint: CameraEndpoint) {
+    const damper = 1 * this.speed;
     this[cameraEndpoint === "camera" ? "position" : "lookAt"] =
       cameraEndpoint === "camera"
         ? // rotate camera around lookAt
           rotateEndpoint(
             this.lookAt,
             this.position,
-            { x: delta.x * this.speed, y: delta.y * this.speed },
+            { x: delta.x * damper, y: delta.y * damper },
             Math.PI / 2,
           )
         : // rotate lookAt around camera
           rotateEndpoint(
             this.position,
             this.lookAt,
-            { x: -delta.x * this.speed, y: delta.y * this.speed },
+            { x: -delta.x * damper, y: delta.y * damper },
             // Math.PI / 2,
           );
 
