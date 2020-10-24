@@ -1,0 +1,12 @@
+{
+  "name": "basics",
+  "displayName": "basics",
+  "expo": {
+    "name": "basics",
+    "slug": "basics",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
