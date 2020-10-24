@@ -155,8 +155,12 @@ export default class Camera {
     const originalPos = { ...this.camera.position };
 
     this.camera.translateX(-x / this.zoom / damper);
-    this.camera.translateZ(-y / this.zoom / damper);
-    this.camera.position.y = originalPos.y;
+    if (this.type === "OrthographicCamera") {
+      this.camera.translateY(y / this.zoom / damper);
+    } else {
+      this.camera.translateZ(-y / this.zoom / damper);
+      this.camera.position.y = originalPos.y;
+    }
     this.setPosition({
       position: this.camera.position,
       lookAt: {
@@ -189,7 +193,27 @@ export default class Camera {
   }
 
   setType(type: CameraType) {
+    if (this.type === type) return;
+
     this.type = type;
+
+    if (this.type === "OrthographicCamera") {
+      if (this.isFirstPersonView) {
+        this.position = { ...this.position, y: 10 };
+        this.lookAt = { ...this.position, y: this.firstPersonViewHeight };
+      } else {
+        this.position = { ...this.lookAt, y: 10 };
+        this.lookAt = { ...this.position, y: this.firstPersonViewHeight };
+      }
+    } else {
+      if (this.isFirstPersonView) {
+        this.position.y = this.firstPersonViewHeight;
+        this.lookAt.y = this.firstPersonViewHeight;
+        this.lookAt.z = 10;
+      } else {
+      }
+    }
+
     this.camera = this.createCamera();
   }
 
