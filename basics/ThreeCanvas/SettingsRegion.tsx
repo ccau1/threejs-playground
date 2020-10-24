@@ -84,6 +84,7 @@ export default ({ world }: SettingsRegionProps) => {
           world?.getCamera().setIsFirstPersonView(isFirstPersonView);
           setIsFirstPersonView(isFirstPersonView);
         }}
+        disabled={world?.getCamera().getType() === "OrthographicCamera"}
       />
       <TextField
         label={"FPV Height"}

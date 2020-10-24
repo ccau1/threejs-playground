@@ -5,12 +5,13 @@ interface TextFieldProps {
   value: boolean;
   label: string;
   onChange: (val: boolean) => void;
+  disabled?: boolean;
 }
 
-export default ({ label, value, onChange }: TextFieldProps) => {
+export default ({ label, value, onChange, disabled }: TextFieldProps) => {
   return (
     <TouchableOpacity
-      onPress={() => onChange(!value)}
+      onPress={() => !disabled && onChange(!value)}
       style={{
         flexDirection: "row",
         justifyContent: "space-between",
@@ -18,7 +19,7 @@ export default ({ label, value, onChange }: TextFieldProps) => {
       }}
     >
       <Text style={{ paddingRight: 10 }}>{label}</Text>
-      <Switch value={value} />
+      <Switch value={value} disabled={disabled} />
     </TouchableOpacity>
   );
 };
