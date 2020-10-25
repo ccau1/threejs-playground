@@ -9,6 +9,11 @@ interface Position3D {
   z: number;
 }
 
+interface HotkeyCommand {
+  key: string;
+  onDraw(world: World): void;
+}
+
 type CameraEndpoint = "camera" | "lookAt";
 
 type ChildrenElement = CElement<any, any> | CElement<any, any>[];

@@ -5,7 +5,6 @@ import Renderer from "../Renderer";
 import Scene from "../Scene";
 import Stats from "stats.js";
 import KeyMap from "../KeyMap";
-import * as THREE from "three";
 
 // prop object orientation to up
 // THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -44,7 +43,7 @@ export default class WorldBase {
     this.camera = new Camera(this);
     this.gestures = new Gestures(this);
     this.renderer = new Renderer(this, opts.gl);
-    this.keyMap = new KeyMap();
+    this.keyMap = new KeyMap(this);
 
     // define initial setup
     this.init();

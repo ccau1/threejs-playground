@@ -72,32 +72,6 @@ export default class World extends WorldBase {
     // implement draw handling
     console.log("drawing");
 
-    // handle keystrokes
-    const keySpeed = 10;
-    if (this.keyMap["KeyA"]) {
-      this.camera.paneDelta(keySpeed, 0);
-    }
-    if (this.keyMap["KeyD"]) {
-      this.camera.paneDelta(-keySpeed, 0);
-    }
-    if (this.keyMap["KeyW"]) {
-      this.camera.paneDelta(0, keySpeed);
-    }
-    if (this.keyMap["KeyS"]) {
-      this.camera.paneDelta(0, -keySpeed);
-    }
-
-    if (this.keyMap["ArrowLeft"]) {
-      this.camera.rotateDelta({ x: keySpeed, y: 0 }, "lookAt");
-    }
-    if (this.keyMap["ArrowRight"]) {
-      this.camera.rotateDelta({ x: -keySpeed, y: 0 }, "lookAt");
-    }
-    if (this.keyMap["ArrowUp"]) {
-      this.camera.rotateDelta({ x: 0, y: keySpeed }, "lookAt");
-    }
-    if (this.keyMap["ArrowDown"]) {
-      this.camera.rotateDelta({ x: 0, y: -keySpeed }, "lookAt");
-    }
+    this.keyMap.draw();
   }
 }
