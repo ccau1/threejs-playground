@@ -1,11 +1,13 @@
 export default {
-  KeyA: "moveLeft",
-  KeyD: "moveRight",
-  KeyW: "moveForward",
-  KeyS: "moveBackward",
+  moveLeft: "KeyA",
+  moveRight: "KeyD",
+  moveForward: "KeyW",
+  moveBackward: "KeyS",
 
-  ArrowLeft: "rotateHeadLeft",
-  ArrowRight: "rotateHeadRight",
-  ArrowUp: "rotateHeadUp",
-  ArrowDown: "rotateHeadDown",
+  rotateHeadLeft: "ArrowLeft",
+  rotateHeadRight: "ArrowRight",
+  rotateHeadUp: "ArrowUp",
+  rotateHeadDown: "ArrowDown",
+
+  toggleFPV: "KeyP",
 } as { [comobos: string]: string };

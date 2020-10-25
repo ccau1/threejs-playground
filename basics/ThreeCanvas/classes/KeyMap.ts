@@ -3,10 +3,46 @@ import World from "./World";
 
 export default class KeyMap {
   protected world: World;
-  [keyCode: string]: boolean | ((keyCode: string) => void) | World;
+  protected hotkeys: Hotkeys;
+  protected hotkeyCommands: HotkeyCommands;
+  [keyCode: string]:
+    | boolean
+    | ((keyCode: string) => void)
+    | ((hotkeys: Hotkeys) => void)
+    | ((hotkeyCommands: HotkeyCommands) => void)
+    | ((command: string, hotkey: string) => void)
+    | World
+    | Hotkeys
+    | HotkeyCommands;
 
-  constructor(world: World) {
+  constructor(
+    world: World,
+    hotkeys?: Hotkeys,
+    hotkeyCommands?: HotkeyCommands,
+  ) {
     this.world = world;
+    this.hotkeys = hotkeys || {};
+    this.hotkeyCommands = hotkeyCommands || {};
+  }
+
+  getHotkeys() {
+    return this.hotkeys;
+  }
+
+  setHotkeys(hotkeys: Hotkeys) {
+    this.hotkeys = hotkeys;
+  }
+
+  setHotkeyByCommand(command: string, hotkey: string) {
+    this.hotkeys[command] = hotkey;
+  }
+
+  getHotkeyCommands() {
+    return this.hotkeyCommands;
+  }
+
+  setHotkeyCommands(hotkeyCommands: HotkeyCommands) {
+    this.hotkeyCommands = hotkeyCommands;
   }
 
   onKeyDown(keyCode: string) {
@@ -18,7 +54,7 @@ export default class KeyMap {
 
   draw() {
     // handle keystrokes
-    for (const hotKeyCombos of Object.keys(hotkeys)) {
+    for (const [hotKeyCommand, hotKeyCombos] of Object.entries(hotkeys)) {
       if (
         hotKeyCombos
           .split(",")
@@ -26,7 +62,7 @@ export default class KeyMap {
             hotKeyCombo.split("+").every((hkc) => this[hkc]),
           )
       ) {
-        commands[hotkeys[hotKeyCombos]].onDraw(this.world);
+        commands[hotKeyCommand].onDraw(this.world);
       }
     }
   }

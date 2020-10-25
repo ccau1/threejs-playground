@@ -11,7 +11,16 @@ interface Position3D {
 
 interface HotkeyCommand {
   key: string;
+  name: string;
   onDraw(world: World): void;
+}
+
+interface HotkeyCommands {
+  [key: string]: HotkeyCommand;
+}
+
+interface Hotkeys {
+  [comobos: string]: string;
 }
 
 type CameraEndpoint = "camera" | "lookAt";

@@ -6,6 +6,7 @@ import rotateHeadLeft from "./rotateHeadLeft";
 import rotateHeadRight from "./rotateHeadRight";
 import rotateHeadUp from "./rotateHeadUp";
 import rotateHeadDown from "./rotateHeadDown";
+import toggleFPV from "./toggleFPV";
 
 export default {
   moveLeft,
@@ -17,4 +18,6 @@ export default {
   rotateHeadRight,
   rotateHeadUp,
   rotateHeadDown,
+
+  toggleFPV,
 } as { [command: string]: HotkeyCommand };

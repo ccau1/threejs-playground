@@ -6,6 +6,7 @@ import { TouchTrackerContext } from "./contexts/TouchTrackerContext";
 import { ReactElementSize } from "../@hooks/web/useDimensions";
 import { Dimensions, Platform } from "react-native";
 import SettingsRegion from "./SettingsRegion";
+import HotkeysRegion from "./HotkeysRegion";
 
 const { width, height } = Dimensions.get("window");
 
@@ -73,6 +74,7 @@ export default () => {
         }}
       />
       {world && <SettingsRegion world={world} />}
+      {world && <HotkeysRegion world={world} />}
       <DimensionsTracker onResize={setDimensions} />
     </>
   );

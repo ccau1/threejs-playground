@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View } from "react-native";
 import World from "./classes/World";
 import PickerField from "./components/PickerField";
+import RegionHeader from "./components/RegionHeader";
 import SwitchField from "./components/SwitchField";
 import TextField from "./components/TextField";
 
@@ -43,6 +44,7 @@ export default ({ world }: SettingsRegionProps) => {
   const [firstPersonViewHeight, setFirstPersonViewHeight] = useState(
     world?.getCamera().getFirstPersonViewHeight().toString(),
   );
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <View
@@ -56,77 +58,86 @@ export default ({ world }: SettingsRegionProps) => {
         width: 300,
       }}
     >
-      <SwitchField
-        label={"3D"}
-        value={is3d}
-        onChange={(is3d) => {
-          const newCameraType = !is3d
-            ? "OrthographicCamera"
-            : "PerspectiveCamera";
-          world?.getCamera().setType(newCameraType);
-          setCameraType(newCameraType);
-        }}
+      <RegionHeader
+        label={"Global Settings"}
+        isCollapsed={isCollapsed}
+        onToggleCollapsed={setIsCollapsed}
       />
-      <PickerField
-        label={"Camera"}
-        value={cameraType}
-        options={cameraTypeOptions}
-        onChange={(val) => {
-          setCameraType(val);
+      {!isCollapsed && (
+        <View>
+          <SwitchField
+            label={"3D"}
+            value={is3d}
+            onChange={(is3d) => {
+              const newCameraType = !is3d
+                ? "OrthographicCamera"
+                : "PerspectiveCamera";
+              world?.getCamera().setType(newCameraType);
+              setCameraType(newCameraType);
+            }}
+          />
+          <PickerField
+            label={"Camera"}
+            value={cameraType}
+            options={cameraTypeOptions}
+            onChange={(val) => {
+              setCameraType(val);
 
-          world?.getCamera().setType(val as CameraType);
-        }}
-      />
-      <SwitchField
-        label={"FPV (First Person View)"}
-        value={isFirstPersonView}
-        onChange={(isFirstPersonView) => {
-          world?.getCamera().setIsFirstPersonView(isFirstPersonView);
-          setIsFirstPersonView(isFirstPersonView);
-        }}
-        disabled={world?.getCamera().getType() === "OrthographicCamera"}
-      />
-      <TextField
-        label={"FPV Height"}
-        value={firstPersonViewHeight}
-        onChange={(val) => {
-          const firstPersonViewHeightNum = parseFloat(val);
-          if (val !== "" && isNaN(firstPersonViewHeightNum)) return;
-          setFirstPersonViewHeight(val);
+              world?.getCamera().setType(val as CameraType);
+            }}
+          />
+          <SwitchField
+            label={"FPV (First Person View)"}
+            value={isFirstPersonView}
+            onChange={(isFirstPersonView) => {
+              world?.getCamera().setIsFirstPersonView(isFirstPersonView);
+              setIsFirstPersonView(isFirstPersonView);
+            }}
+            disabled={world?.getCamera().getType() === "OrthographicCamera"}
+          />
+          <TextField
+            label={"FPV Height"}
+            value={firstPersonViewHeight}
+            onChange={(val) => {
+              const firstPersonViewHeightNum = parseFloat(val);
+              if (val !== "" && isNaN(firstPersonViewHeightNum)) return;
+              setFirstPersonViewHeight(val);
 
-          if (!isNaN(firstPersonViewHeightNum)) {
-            world
-              ?.getCamera()
-              .setFirstPersonViewHeight(firstPersonViewHeightNum);
-          }
-        }}
-      />
-      <TextField
-        label={"Zoom"}
-        value={zoom}
-        onChange={(val) => {
-          const zoomNum = parseFloat(val);
-          if (val !== "" && isNaN(zoomNum)) return;
-          setZoom(val);
+              if (!isNaN(firstPersonViewHeightNum)) {
+                world
+                  ?.getCamera()
+                  .setFirstPersonViewHeight(firstPersonViewHeightNum);
+              }
+            }}
+          />
+          <TextField
+            label={"Zoom"}
+            value={zoom}
+            onChange={(val) => {
+              const zoomNum = parseFloat(val);
+              if (val !== "" && isNaN(zoomNum)) return;
+              setZoom(val);
 
-          if (!isNaN(zoomNum)) {
-            world?.getCamera().setZoom(zoomNum);
-          }
-        }}
-      />
-      <TextField
-        label={"Cam Speed"}
-        value={cameraSpeed}
-        onChange={(val) => {
-          const speedNum = parseFloat(val);
-          if (val !== "" && isNaN(speedNum)) return;
-          setCameraSpeed(val);
+              if (!isNaN(zoomNum)) {
+                world?.getCamera().setZoom(zoomNum);
+              }
+            }}
+          />
+          <TextField
+            label={"Cam Speed"}
+            value={cameraSpeed}
+            onChange={(val) => {
+              const speedNum = parseFloat(val);
+              if (val !== "" && isNaN(speedNum)) return;
+              setCameraSpeed(val);
 
-          if (!isNaN(speedNum)) {
-            world?.getCamera().setSpeed(speedNum);
-          }
-        }}
-      />
+              if (!isNaN(speedNum)) {
+                world?.getCamera().setSpeed(speedNum);
+              }
+            }}
+          />
+        </View>
+      )}
     </View>
   );
 };

@@ -3,6 +3,7 @@ import { MOVE_SPEED } from "./_constants";
 
 export default {
   key: "moveBackward",
+  name: "Move Backward",
   onDraw: (world: World) => {
     world.getCamera().paneDelta(0, -MOVE_SPEED);
   },
