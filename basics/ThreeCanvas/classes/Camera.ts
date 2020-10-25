@@ -155,9 +155,8 @@ export default class Camera {
     const originalPos = { ...this.camera.position };
 
     this.camera.translateX(-x / this.zoom / damper);
-    if (this.type === "OrthographicCamera") {
-      this.camera.translateY(y / this.zoom / damper);
-    } else {
+    this.camera.translateY(y / this.zoom / damper);
+    if (this.type === "PerspectiveCamera") {
       this.camera.translateZ(-y / this.zoom / damper);
       this.camera.position.y = originalPos.y;
     }
