@@ -61,10 +61,10 @@ export default class Renderer {
   protected _drawLoop() {
     requestAnimationFrame((time) => {
       if (!this.isDrawing) return;
-      this.world.getStats().begin();
+      this.world.getStats()?.begin();
       this.world.draw();
       this.render();
-      this.world.getStats().end();
+      this.world.getStats()?.end();
       this._drawLoop();
       TWEEN.update(time);
     });

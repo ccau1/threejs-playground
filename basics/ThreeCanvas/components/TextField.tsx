@@ -27,6 +27,8 @@ export default ({ label, value, onChange }: TextFieldProps) => {
             minWidth: 0,
             textAlign: "right",
             ...Platform.select({
+              ios: {},
+              android: {},
               default: {
                 outline: "none",
               },

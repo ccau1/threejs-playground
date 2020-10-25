@@ -14,7 +14,7 @@ interface SettingsRegionProps {
 
 export default ({ world }: SettingsRegionProps) => {
   const [hotkeys, setHotkeys] = useState(world.getKeyMap().getHotkeys());
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <View
@@ -26,6 +26,7 @@ export default ({ world }: SettingsRegionProps) => {
         borderWidth: 1,
         backgroundColor: "#fff",
         width: 300,
+        zIndex: 100,
       }}
     >
       <RegionHeader
@@ -38,6 +39,7 @@ export default ({ world }: SettingsRegionProps) => {
           {Object.values(world.getKeyMap().getHotkeyCommands()).map(
             (command) => (
               <TextField
+                key={command.key}
                 label={command.name}
                 value={hotkeys[command.key] || ""}
                 onChange={(val) => {

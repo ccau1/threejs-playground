@@ -6,6 +6,7 @@ import Scene from "../Scene";
 import Stats from "stats.js";
 import KeyMap from "../KeyMap";
 import hotkeys, { commands as hotkeyCommands } from "../../hotkeys";
+import { Platform } from "react-native";
 
 // prop object orientation to up
 // THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -19,7 +20,7 @@ export default class WorldBase {
   public aspectRatio: number;
   public pixelRatio: number;
   public gestures: Gestures;
-  public stats: Stats = new Stats();
+  public stats?: Stats;
   protected keyMap: KeyMap;
 
   constructor(options: {
@@ -37,7 +38,10 @@ export default class WorldBase {
     this.pixelRatio = opts.pixelRatio || window.devicePixelRatio || 1;
     this.aspectRatio = this.width / this.height;
 
-    this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    if (Platform.OS === "web" || Platform.OS === "windows") {
+      this.stats = new Stats();
+      this.stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
+    }
 
     // instantiate our classes
     this.scene = new Scene(this);

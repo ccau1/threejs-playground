@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View } from "react-native";
+import { View, StatusBar } from "react-native";
 import World from "./classes/World";
 import PickerField from "./components/PickerField";
 import RegionHeader from "./components/RegionHeader";
@@ -56,6 +56,8 @@ export default ({ world }: SettingsRegionProps) => {
         borderWidth: 1,
         backgroundColor: "#fff",
         width: 300,
+        paddingTop: StatusBar.currentHeight,
+        zIndex: 100,
       }}
     >
       <RegionHeader
