@@ -7,12 +7,13 @@ import { ReactElementSize } from "../@hooks/web/useDimensions";
 import { Platform } from "react-native";
 import SettingsRegion from "./SettingsRegion";
 import HotkeysRegion from "./HotkeysRegion";
+import ThreeCanvasContexts from "./ThreeCanvasContexts";
 
 interface WorldCanvasProps {
   world?: World;
 }
 
-export default ({ world: propWorld }: WorldCanvasProps) => {
+const WorldCanvas = ({ world: propWorld }: WorldCanvasProps) => {
   // instantiate states
   const [world] = useState<World>(propWorld || new World());
   const [dimensions, setDimensions] = useState<ReactElementSize>();
@@ -72,5 +73,17 @@ export default ({ world: propWorld }: WorldCanvasProps) => {
       {world && <HotkeysRegion world={world} />}
       <DimensionsTracker onResize={setDimensions} />
     </>
+  );
+};
+
+interface WorldCanvasWrapperProps {
+  world?: World;
+}
+
+export default ({ world }: WorldCanvasWrapperProps) => {
+  return (
+    <ThreeCanvasContexts>
+      <WorldCanvas world={world} />
+    </ThreeCanvasContexts>
   );
 };
