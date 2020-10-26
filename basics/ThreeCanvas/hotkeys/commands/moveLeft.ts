@@ -5,6 +5,6 @@ export default {
   key: "moveLeft",
   name: "Move Left",
   onDraw: (world: World) => {
-    world.getCamera().paneDelta(MOVE_SPEED, 0);
+    world.camera.paneDelta(MOVE_SPEED, 0);
   },
 };

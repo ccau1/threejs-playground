@@ -1,11 +1,6 @@
-import React from 'react';
-import WorldCanvas from './WorldCanvas';
-import ThreeCanvasContexts from './ThreeCanvasContexts';
+import React from "react";
+import Universe from "./Universe";
 
-export default () => {
-  return (
-    <ThreeCanvasContexts>
-      <WorldCanvas />
-    </ThreeCanvasContexts>
-  )
-}
+export default ({}) => {
+  return <Universe />;
+};

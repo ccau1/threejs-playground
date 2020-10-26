@@ -36,4 +36,19 @@ interface MeshPool {
 interface MeshPoolItem {
   id: string;
   object3D: THREE.Object3D;
+  entangled: boolean;
+}
+
+interface WorldBaseConstructor {
+  _id?: string;
+  gl?: ExpoWebGLRenderingContext;
+  width?: number;
+  height?: number;
+  initDraw?: boolean;
+  pixelRatio?: number;
+  universe?: Universe;
+}
+
+interface Worlds {
+  [worldId: string]: World;
 }

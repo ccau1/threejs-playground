@@ -4,32 +4,40 @@ import World from "./World";
 import TWEEN from "@tweenjs/tween.js";
 
 export default class Renderer {
-  protected gl: ExpoWebGLRenderingContext;
-  protected renderer: ExpoTHREE.Renderer;
+  protected _gl: ExpoWebGLRenderingContext;
+  protected _renderer: ExpoTHREE.Renderer;
   protected world: World;
   protected isDrawing: boolean = false;
 
   constructor(world: World, gl: ExpoWebGLRenderingContext) {
-    this.gl = gl;
-    this.renderer = new ExpoTHREE.Renderer({
+    this._gl = gl;
+    this._renderer = new ExpoTHREE.Renderer({
       gl,
       antialias: true,
       powerPreference: "high-performance",
     });
 
     this.world = world;
-    this.renderer.setSize(world.width, world.height);
-    this.renderer.setPixelRatio(world.pixelRatio);
+    this._renderer.setSize(world.width, world.height);
+    this._renderer.setPixelRatio(world.pixelRatio);
   }
 
-  getRenderer() {
-    return this.renderer;
+  get gl() {
+    return this._gl;
   }
 
-  setGl(gl: ExpoWebGLRenderingContext) {
-    this.gl = gl;
-    this.renderer = new ExpoTHREE.Renderer({ gl });
+  set gl(gl: ExpoWebGLRenderingContext) {
+    this._gl = gl;
+    this._renderer = new ExpoTHREE.Renderer({
+      gl,
+      antialias: true,
+      powerPreference: "high-performance",
+    });
     this.setScreenSize(this.world.width, this.world.height);
+  }
+
+  get renderer() {
+    return this._renderer;
   }
 
   setScreenSize(
@@ -42,10 +50,7 @@ export default class Renderer {
   }
 
   render() {
-    this.renderer.render(
-      this.world.getScene().getScene(),
-      this.world.getCamera().getCamera(),
-    );
+    this.renderer.render(this.world.scene.scene, this.world.camera.camera);
     this.gl.endFrameEXP();
   }
 
@@ -61,10 +66,10 @@ export default class Renderer {
   protected _drawLoop() {
     requestAnimationFrame((time) => {
       if (!this.isDrawing) return;
-      this.world.getStats()?.begin();
+      this.world.stats?.begin();
       this.world.draw();
       this.render();
-      this.world.getStats()?.end();
+      this.world.stats?.end();
       this._drawLoop();
       TWEEN.update(time);
     });

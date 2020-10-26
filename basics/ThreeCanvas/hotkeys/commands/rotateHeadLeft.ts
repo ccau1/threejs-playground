@@ -5,6 +5,6 @@ export default {
   key: "rotateHeadLeft",
   name: "Rotate Head Left",
   onDraw: (world: World) => {
-    world.getCamera().rotateDelta({ x: MOVE_SPEED, y: 0 }, "lookAt");
+    world.camera.rotateDelta({ x: MOVE_SPEED, y: 0 }, "lookAt");
   },
 };

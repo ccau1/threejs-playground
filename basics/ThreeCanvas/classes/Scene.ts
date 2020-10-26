@@ -1,8 +1,8 @@
-import * as THREE from 'three';
-import World from './World';
+import * as THREE from "three";
+import World from "./World";
 
 export default class Scene {
-  protected scene: THREE.Scene = new THREE.Scene();
+  protected _scene: THREE.Scene = new THREE.Scene();
   protected meshPool: MeshPool = {};
   protected world: World;
 
@@ -10,26 +10,37 @@ export default class Scene {
     this.world = world;
   }
 
-  getScene() {
-    return this.scene;
+  get scene() {
+    return this._scene;
   }
 
   getObject(id: string) {
     return this.meshPool[id]?.object3D;
   }
 
-  addObject(id: string, object3D: THREE.Object3D) {
-    if (this.meshPool[id]) throw new Error('object already added');
+  addObject(
+    id: string,
+    object3D: THREE.Object3D,
+    options?: { entangled?: boolean },
+  ) {
+    if (this.meshPool[id]) throw new Error("object already added");
+    const opts = {
+      entangled: true,
+      ...options,
+    };
 
     object3D.name = id;
     this.meshPool[id] = {
       id,
-      object3D
+      object3D,
+      // if entangled, changes to this item will reverberate
+      // through the universe
+      entangled: opts.entangled,
     };
     this.scene.add(object3D);
   }
 
-  removeSceneObject(id: string) {
+  removeObject(id: string) {
     this.scene.remove(this.meshPool[id].object3D);
     delete this.meshPool[id];
   }

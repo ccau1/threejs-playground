@@ -53,6 +53,9 @@ export default class KeyMap {
   }
 
   draw() {
+    // if this is not selected, skip all key handlings
+    if (this.world.universe && !this.world.isSelected) return;
+
     // handle keystrokes
     for (const [hotKeyCommand, hotKeyCombos] of Object.entries(hotkeys)) {
       if (

@@ -5,9 +5,9 @@ import TWEEN from "@tweenjs/tween.js";
 
 export default class Camera {
   protected type: CameraType = "PerspectiveCamera";
-  protected camera: THREE.Camera;
-  protected position: Position3D = { x: 0, y: 10, z: 0 };
-  protected lookAt: Position3D = { x: 0, y: 0, z: 0 };
+  protected _camera: THREE.Camera;
+  protected _position: Position3D = { x: 0, y: 10, z: 0 };
+  protected _lookAt: Position3D = { x: 0, y: 0, z: 0 };
   protected world: World;
   protected near: number = 0.1;
   protected far: number = 1000;
@@ -19,12 +19,11 @@ export default class Camera {
 
   constructor(world: World, camera?: THREE.Camera) {
     this.world = world;
-    this.camera = camera || this.createCamera();
-    console.log("TWEEN", TWEEN);
+    this._camera = camera || this.createCamera();
   }
 
   setCamera(camera: THREE.Camera) {
-    this.camera = camera;
+    this._camera = camera;
   }
 
   getSpeed() {
@@ -42,7 +41,7 @@ export default class Camera {
   setFirstPersonViewHeight(firstPersonViewHeight: number) {
     this.firstPersonViewHeight = firstPersonViewHeight;
     if (this.isFirstPersonView) {
-      this.position.y = firstPersonViewHeight;
+      this._position.y = firstPersonViewHeight;
     }
     this.lookAt.y = firstPersonViewHeight;
     this.syncPosition();
@@ -60,21 +59,19 @@ export default class Camera {
       // define new camera position
       const newCameraPosition = isFirstPersonView
         ? { ...this.lookAt, y: this.firstPersonViewHeight }
-        : { ...this.position, y: 10 };
+        : { ...this._position, y: 10 };
       // define new camera look at position
       const newCameraLookAt = isFirstPersonView
         ? { ...this.lookAt, z: 10 }
-        : { ...this.position, y: this.firstPersonViewHeight };
+        : { ...this._position, y: this.firstPersonViewHeight };
 
       // move camera
-      new TWEEN.Tween(this.position)
+      new TWEEN.Tween(this._position)
         // Move to new position in 1 second.
         .to(newCameraPosition, 1000)
         // Use an easing function to make the animation smooth.
         .easing(TWEEN.Easing.Quadratic.Out)
         .onUpdate(() => {
-          console.log("updating animation", this.position);
-
           this.syncPosition();
         })
         .start();
@@ -104,10 +101,10 @@ export default class Camera {
     zoom?: number;
   }) {
     if (pos.position) {
-      this.position = pos.position;
+      this._position = pos.position;
     }
     if (pos.lookAt) {
-      this.lookAt = pos.lookAt;
+      this._lookAt = pos.lookAt;
     }
     if (pos.zoom) {
       this.zoom = pos.zoom;
@@ -122,9 +119,9 @@ export default class Camera {
     zoom?: number;
   }) {
     const newPosition = {
-      x: this.position.x + (posDelta.position?.x || 0),
-      y: this.position.y + (posDelta.position?.y || 0),
-      z: this.position.z + (posDelta.position?.z || 0),
+      x: this._position.x + (posDelta.position?.x || 0),
+      y: this._position.y + (posDelta.position?.y || 0),
+      z: this._position.z + (posDelta.position?.z || 0),
     };
     const newLookAt = {
       x: this.lookAt.x + (posDelta.lookAt?.x || 0),
@@ -141,8 +138,12 @@ export default class Camera {
     });
   }
 
-  getPosition() {
-    return this.position;
+  get position() {
+    return this._position;
+  }
+
+  get lookAt() {
+    return this._lookAt;
   }
 
   getLookAt() {
@@ -172,7 +173,7 @@ export default class Camera {
 
   rotateDelta(delta: Position2D, cameraEndpoint: CameraEndpoint) {
     const damper = 1 * this.speed;
-    this[cameraEndpoint === "camera" ? "position" : "lookAt"] =
+    this[cameraEndpoint === "camera" ? "_position" : "_lookAt"] =
       cameraEndpoint === "camera"
         ? // rotate camera around lookAt
           rotateEndpoint(
@@ -199,11 +200,11 @@ export default class Camera {
 
     if (this.type === "OrthographicCamera") {
       if (this.isFirstPersonView) {
-        this.position = { ...this.position, y: 10 };
-        this.lookAt = { ...this.position, y: this.firstPersonViewHeight };
+        this._position = { ...this.position, y: 10 };
+        this._lookAt = { ...this.position, y: this.firstPersonViewHeight };
       } else {
-        this.position = { ...this.lookAt, y: 10 };
-        this.lookAt = { ...this.position, y: this.firstPersonViewHeight };
+        this._position = { ...this.lookAt, y: 10 };
+        this._lookAt = { ...this.position, y: this.firstPersonViewHeight };
       }
     } else {
       if (this.isFirstPersonView) {
@@ -214,7 +215,7 @@ export default class Camera {
       }
     }
 
-    this.camera = this.createCamera();
+    this._camera = this.createCamera();
   }
 
   getType() {
@@ -222,11 +223,11 @@ export default class Camera {
   }
 
   setScreenSize(width: number, height: number) {
-    this.camera = this.createCamera();
+    this._camera = this.createCamera();
   }
 
-  getCamera() {
-    return this.camera;
+  get camera() {
+    return this._camera;
   }
 
   syncPosition(camera: THREE.Camera = this.camera) {

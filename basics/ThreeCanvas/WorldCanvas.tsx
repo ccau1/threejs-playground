@@ -4,15 +4,17 @@ import World from "./classes/World";
 import DimensionsTracker from "../components/DimensionsTracker";
 import { TouchTrackerContext } from "./contexts/TouchTrackerContext";
 import { ReactElementSize } from "../@hooks/web/useDimensions";
-import { Dimensions, Platform } from "react-native";
+import { Platform } from "react-native";
 import SettingsRegion from "./SettingsRegion";
 import HotkeysRegion from "./HotkeysRegion";
 
-const { width, height } = Dimensions.get("window");
+interface WorldCanvasProps {
+  world?: World;
+}
 
-export default () => {
+export default ({ world: propWorld }: WorldCanvasProps) => {
   // instantiate states
-  const [world, setWorld] = useState<World | null>(null);
+  const [world] = useState<World>(propWorld || new World());
   const [dimensions, setDimensions] = useState<ReactElementSize>();
 
   // get touch listeners
@@ -24,16 +26,16 @@ export default () => {
       // if platform is html based
       if (Platform.OS === "web" || Platform.OS === "windows") {
         // add stats to dom
-        document.body.appendChild(world.getStats().dom);
+        world.stats && document.body.appendChild(world.stats.dom);
         // listen for keyboard events
         document.addEventListener(
           "keydown",
-          (ev) => world.getKeyMap().onKeyDown(ev.code),
+          (ev) => world.keyMap.onKeyDown(ev.code),
           true,
         );
         document.addEventListener(
           "keyup",
-          (ev) => world.getKeyMap().onKeyUp(ev.code),
+          (ev) => world.keyMap.onKeyUp(ev.code),
           true,
         );
       }
@@ -65,14 +67,7 @@ export default () => {
 
   return (
     <>
-      <GLView
-        style={{ flex: 1 }}
-        onContextCreate={(gl) => {
-          const world = new World({ gl });
-          world.setScreenSize(width, height);
-          setWorld(world);
-        }}
-      />
+      <GLView style={{ flex: 1 }} onContextCreate={(gl) => (world.gl = gl)} />
       {world && <SettingsRegion world={world} />}
       {world && <HotkeysRegion world={world} />}
       <DimensionsTracker onResize={setDimensions} />

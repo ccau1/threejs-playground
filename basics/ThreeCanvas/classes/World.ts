@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { Vector3 } from "three";
 
 export default class World extends WorldBase {
-  constructor(opts: { gl: ExpoWebGLRenderingContext; initDraw?: boolean }) {
+  constructor(opts?: WorldBaseConstructor) {
     super(opts);
   }
 
@@ -13,7 +13,7 @@ export default class World extends WorldBase {
       position: { x: 0, y: 10, z: 0 },
       lookAt: { x: 0, y: 0, z: 0 },
     });
-    this.renderer.getRenderer().setClearColor("#e6f9ff");
+    this._renderer?.renderer.setClearColor("#e6f9ff");
 
     // draw hemisphere light
     const hemisphereLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 1);

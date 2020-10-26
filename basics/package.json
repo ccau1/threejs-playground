@@ -11,6 +11,7 @@
     "@react-native-community/picker": "^1.8.1",
     "@react-navigation/native": "^5.7.6",
     "@tweenjs/tween.js": "^17.6.0",
+    "bson": "^4.2.0",
     "expo": "~39.0.2",
     "expo-gl": "^9.1.1",
     "expo-splash-screen": "~0.6.2",
@@ -33,6 +34,7 @@
     "@types/react-dom": "~16.9.8",
     "@types/react-native": "~0.63.2",
     "@types/stats.js": "^0.17.0",
+    "@types/tween.js": "^18.5.1",
     "babel-preset-expo": "~8.3.0",
     "jest-expo": "~39.0.0",
     "typescript": "~3.9.5"

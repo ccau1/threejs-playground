@@ -13,7 +13,7 @@ interface SettingsRegionProps {
 }
 
 export default ({ world }: SettingsRegionProps) => {
-  const [hotkeys, setHotkeys] = useState(world.getKeyMap().getHotkeys());
+  const [hotkeys, setHotkeys] = useState(world.keyMap.getHotkeys());
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
@@ -36,19 +36,17 @@ export default ({ world }: SettingsRegionProps) => {
       />
       {!isCollapsed && (
         <ScrollView style={{ maxHeight: 400 }}>
-          {Object.values(world.getKeyMap().getHotkeyCommands()).map(
-            (command) => (
-              <TextField
-                key={command.key}
-                label={command.name}
-                value={hotkeys[command.key] || ""}
-                onChange={(val) => {
-                  setHotkeys({ ...hotkeys, [command.key]: val });
-                  world.getKeyMap().setHotkeyByCommand(command.key, val);
-                }}
-              />
-            ),
-          )}
+          {Object.values(world.keyMap.getHotkeyCommands()).map((command) => (
+            <TextField
+              key={command.key}
+              label={command.name}
+              value={hotkeys[command.key] || ""}
+              onChange={(val) => {
+                setHotkeys({ ...hotkeys, [command.key]: val });
+                world.keyMap.setHotkeyByCommand(command.key, val);
+              }}
+            />
+          ))}
         </ScrollView>
       )}
     </View>

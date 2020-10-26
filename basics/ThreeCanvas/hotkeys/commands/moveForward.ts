@@ -5,6 +5,6 @@ export default {
   key: "moveForward",
   name: "Move Forward",
   onDraw: (world: World) => {
-    world.getCamera().paneDelta(0, MOVE_SPEED);
+    world.camera.paneDelta(0, MOVE_SPEED);
   },
 };

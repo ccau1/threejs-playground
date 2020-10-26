@@ -17,7 +17,7 @@ interface SettingsRegionProps {
 export default ({ world }: SettingsRegionProps) => {
   // Camera Type settings
   const [cameraType, setCameraType] = useState(
-    world?.getCamera().getType().toString(),
+    world?.camera.getType().toString(),
   );
   const is3d = cameraType === "PerspectiveCamera";
   const cameraTypeOptions = [
@@ -26,23 +26,21 @@ export default ({ world }: SettingsRegionProps) => {
   ];
 
   // Zoom settings
-  const [zoom, setZoom] = useState(
-    world?.getCamera().getZoom().toString() || "",
-  );
+  const [zoom, setZoom] = useState(world?.camera.getZoom().toString() || "");
 
   // Camera Speed settings
   const [cameraSpeed, setCameraSpeed] = useState(
-    world?.getCamera().getSpeed().toString() || "",
+    world?.camera.getSpeed().toString() || "",
   );
 
   // Camera First Person View settings
   const [isFirstPersonView, setIsFirstPersonView] = useState(
-    world?.getCamera().getIsFirstPersonView(),
+    world?.camera.getIsFirstPersonView(),
   );
 
   // Camera First Person View Height settings
   const [firstPersonViewHeight, setFirstPersonViewHeight] = useState(
-    world?.getCamera().getFirstPersonViewHeight().toString(),
+    world?.camera.getFirstPersonViewHeight().toString(),
   );
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -74,7 +72,7 @@ export default ({ world }: SettingsRegionProps) => {
               const newCameraType = !is3d
                 ? "OrthographicCamera"
                 : "PerspectiveCamera";
-              world?.getCamera().setType(newCameraType);
+              world?.camera.setType(newCameraType);
               setCameraType(newCameraType);
             }}
           />
@@ -85,17 +83,17 @@ export default ({ world }: SettingsRegionProps) => {
             onChange={(val) => {
               setCameraType(val);
 
-              world?.getCamera().setType(val as CameraType);
+              world?.camera.setType(val as CameraType);
             }}
           />
           <SwitchField
             label={"FPV (First Person View)"}
             value={isFirstPersonView}
             onChange={(isFirstPersonView) => {
-              world?.getCamera().setIsFirstPersonView(isFirstPersonView);
+              world?.camera.setIsFirstPersonView(isFirstPersonView);
               setIsFirstPersonView(isFirstPersonView);
             }}
-            disabled={world?.getCamera().getType() === "OrthographicCamera"}
+            disabled={world?.camera.getType() === "OrthographicCamera"}
           />
           <TextField
             label={"FPV Height"}
@@ -106,9 +104,9 @@ export default ({ world }: SettingsRegionProps) => {
               setFirstPersonViewHeight(val);
 
               if (!isNaN(firstPersonViewHeightNum)) {
-                world
-                  ?.getCamera()
-                  .setFirstPersonViewHeight(firstPersonViewHeightNum);
+                world?.camera.setFirstPersonViewHeight(
+                  firstPersonViewHeightNum,
+                );
               }
             }}
           />
@@ -121,7 +119,7 @@ export default ({ world }: SettingsRegionProps) => {
               setZoom(val);
 
               if (!isNaN(zoomNum)) {
-                world?.getCamera().setZoom(zoomNum);
+                world?.camera.setZoom(zoomNum);
               }
             }}
           />
@@ -134,7 +132,7 @@ export default ({ world }: SettingsRegionProps) => {
               setCameraSpeed(val);
 
               if (!isNaN(speedNum)) {
-                world?.getCamera().setSpeed(speedNum);
+                world?.camera.setSpeed(speedNum);
               }
             }}
           />

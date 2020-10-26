@@ -10,16 +10,18 @@ export default class Gestures extends GesturesBase {
     super(world);
   }
 
-  onGestureStart(touches: TouchTrackerEvent[], summary: TouchSummary) {
+  onGestureStart = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
     console.log("gesture start", touches, summary);
-  }
+    this.world.setAsSelected();
+  };
 
   onGestureMove = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
+    console.log("onGestureMove");
+
     const isShiftKeyDown =
-      this.world.getKeyMap()["ShiftLeft"] ||
-      this.world.getKeyMap()["ShiftRight"];
+      this.world.keyMap["ShiftLeft"] || this.world.keyMap["ShiftRight"];
     if (
-      this.world.getCamera().getType() === "OrthographicCamera" ||
+      this.world.camera.getType() === "OrthographicCamera" ||
       isShiftKeyDown
     ) {
       // pane screen
@@ -28,7 +30,7 @@ export default class Gestures extends GesturesBase {
       // rotate screen
       this.rotateCamera(
         summary,
-        this.world.getCamera().getIsFirstPersonView() ? "lookAt" : "camera",
+        this.world.camera.getIsFirstPersonView() ? "lookAt" : "camera",
       );
     }
   };
