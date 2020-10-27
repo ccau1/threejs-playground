@@ -1,13 +1,16 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { GLView } from "expo-gl";
 import World from "./classes/World";
 import DimensionsTracker from "../components/DimensionsTracker";
-import { TouchTrackerContext } from "./contexts/TouchTrackerContext";
 import { ReactElementSize } from "../@hooks/web/useDimensions";
-import { Platform, View } from "react-native";
+import { View } from "react-native";
 import SettingsRegion from "./SettingsRegion";
 import HotkeysRegion from "./HotkeysRegion";
 import ThreeCanvasContexts from "./ThreeCanvasContexts";
+import useGestures from "./canvasHooks/useGestures";
+import useKeyMaps from "./canvasHooks/useKeyMaps";
+import useThreeStats from "./canvasHooks/useThreeStats";
+import useResize from "./canvasHooks/useResize";
 
 interface WorldCanvasProps {
   world?: World;
@@ -16,68 +19,21 @@ interface WorldCanvasProps {
 const WorldCanvas = ({ world: propWorld }: WorldCanvasProps) => {
   // instantiate states
   const containerRef = useRef<View>(null);
-  const glViewRef = useRef<GLView>(null);
   const [world] = useState<World>(propWorld || new World());
   const [dimensions, setDimensions] = useState<ReactElementSize>();
 
-  // get touch listeners
-  const { addTouchListener, removeTouchListener } = useContext(
-    TouchTrackerContext,
-  );
-  useEffect(() => {
-    if (world) {
-      // if platform is html based
-      if (Platform.OS === "web" || Platform.OS === "windows") {
-        // add stats to dom
-        if (world.stats) {
-          world.stats.dom.style.position = "absolute";
-          (containerRef.current as any)?.appendChild?.(world.stats.dom);
-        }
-        // listen for keyboard events
-        document.addEventListener(
-          "keydown",
-          (ev) => world.keyMap.onKeyDown(ev.code),
-          true,
-        );
-        document.addEventListener(
-          "keyup",
-          (ev) => world.keyMap.onKeyUp(ev.code),
-          true,
-        );
-      }
-
-      // link gesture events
-      addTouchListener("start", world.gestures.onGestureStart);
-      addTouchListener("move", world.gestures.onGestureMove);
-      addTouchListener("double", world.gestures.onGestureDoubleTap);
-      addTouchListener("end", world.gestures.onGestureEnd);
-    }
-
-    return () => {
-      if (world) {
-        // remove gesture events
-        removeTouchListener("start", world.gestures.onGestureStart);
-        removeTouchListener("move", world.gestures.onGestureMove);
-        removeTouchListener("double", world.gestures.onGestureDoubleTap);
-        removeTouchListener("end", world.gestures.onGestureEnd);
-      }
-    };
-  }, [world]);
-
-  // update screen size
-  useEffect(() => {
-    if (world && dimensions && dimensions.width > 0 && dimensions.height > 0) {
-      world.setScreenSize(dimensions.width, dimensions.height);
-    }
-  }, [world, dimensions]);
+  // connect dom gestures to the world
+  useGestures(world);
+  // connect dom key press events to the world
+  useKeyMaps(world);
+  // connect world's stats to the dom
+  useThreeStats(world, containerRef);
+  // connect dom's resize events to the world
+  useResize(world, dimensions);
 
   return (
     <View ref={containerRef} style={{ flex: 1 }}>
-      <GLView
-        ref={glViewRef}
-        style={{ flex: 1 }}
-        onContextCreate={(gl) => (world.gl = gl)}
-      />
+      <GLView style={{ flex: 1 }} onContextCreate={(gl) => (world.gl = gl)} />
       {world && <SettingsRegion world={world} />}
       {world && <HotkeysRegion world={world} />}
       <DimensionsTracker onResize={setDimensions} />

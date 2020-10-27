@@ -1,7 +1,5 @@
-import { ExpoWebGLRenderingContext } from "expo-gl";
 import WorldBase from "./baseClasses/WorldBase";
 import * as THREE from "three";
-import { Vector3 } from "three";
 
 export default class World extends WorldBase {
   constructor(opts?: WorldBaseConstructor) {
@@ -39,10 +37,10 @@ export default class World extends WorldBase {
 
     // draw ground
     const groundPoints = [
-      new Vector3(-5, 0, -5),
-      new Vector3(5, 0, -5),
-      new Vector3(5, 0, 5),
-      new Vector3(-5, 0, 5),
+      new THREE.Vector3(-5, 0, -5),
+      new THREE.Vector3(5, 0, -5),
+      new THREE.Vector3(5, 0, 5),
+      new THREE.Vector3(-5, 0, 5),
     ];
     const shape = new THREE.Shape(
       groundPoints.map((p) => new THREE.Vector2(p.x, p.z)),

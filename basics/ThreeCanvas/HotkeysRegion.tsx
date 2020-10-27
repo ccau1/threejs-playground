@@ -29,11 +29,6 @@ export default ({ world }: SettingsRegionProps) => {
         zIndex: 100,
       }}
     >
-      <RegionHeader
-        label={"Hotkeys"}
-        isCollapsed={isCollapsed}
-        onToggleCollapsed={setIsCollapsed}
-      />
       {!isCollapsed && (
         <ScrollView style={{ maxHeight: 400 }}>
           {Object.values(world.keyMap.getHotkeyCommands()).map((command) => (
@@ -49,6 +44,11 @@ export default ({ world }: SettingsRegionProps) => {
           ))}
         </ScrollView>
       )}
+      <RegionHeader
+        label={"Hotkeys"}
+        isCollapsed={isCollapsed}
+        onToggleCollapsed={setIsCollapsed}
+      />
     </View>
   );
 };
