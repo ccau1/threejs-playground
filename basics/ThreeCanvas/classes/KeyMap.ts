@@ -3,8 +3,8 @@ import World from "./World";
 
 export default class KeyMap {
   protected world: World;
-  protected hotkeys: Hotkeys;
-  protected hotkeyCommands: HotkeyCommands;
+  protected _hotkeys: Hotkeys;
+  protected _hotkeyCommands: HotkeyCommands;
   [keyCode: string]:
     | boolean
     | ((keyCode: string) => void)
@@ -21,37 +21,62 @@ export default class KeyMap {
     hotkeyCommands?: HotkeyCommands,
   ) {
     this.world = world;
-    this.hotkeys = hotkeys || {};
-    this.hotkeyCommands = hotkeyCommands || {};
+    this._hotkeys = hotkeys || {};
+    this._hotkeyCommands = hotkeyCommands || {};
   }
 
-  getHotkeys() {
-    return this.hotkeys;
+  get hotkeys() {
+    return this._hotkeys;
   }
 
-  setHotkeys(hotkeys: Hotkeys) {
-    this.hotkeys = hotkeys;
+  set hotkeys(hotkeys: Hotkeys) {
+    this._hotkeys = hotkeys;
   }
 
+  get hotkeyCommands() {
+    return this._hotkeyCommands;
+  }
+
+  set hotkeyCommands(hotkeyCommands: HotkeyCommands) {
+    this._hotkeyCommands = hotkeyCommands;
+  }
+
+  /**
+   *
+   * @param command command name to map to
+   * @param hotkey hot key combos to map command to
+   *
+   * set hotkey combos to a command
+   */
   setHotkeyByCommand(command: string, hotkey: string) {
     this.hotkeys[command] = hotkey;
   }
 
-  getHotkeyCommands() {
-    return this.hotkeyCommands;
-  }
-
-  setHotkeyCommands(hotkeyCommands: HotkeyCommands) {
-    this.hotkeyCommands = hotkeyCommands;
-  }
-
+  /**
+   *
+   * @param keyCode code being pressed down
+   *
+   * a key down listener. This needs to be connected to an
+   * event listener
+   */
   onKeyDown(keyCode: string) {
     this[keyCode] = true;
   }
+
+  /**
+   *
+   * @param keyCode code being released
+   *
+   * a key up listener. This needs to be connected to an
+   * event listener
+   */
   onKeyUp(keyCode: string) {
     delete this[keyCode];
   }
 
+  /**
+   * trigger all hotkey combos that has matched
+   */
   draw() {
     // if this is not selected, skip all key handlings
     if (this.world.universe && !this.world.isSelected) return;

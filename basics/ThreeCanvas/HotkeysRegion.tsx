@@ -13,7 +13,7 @@ interface SettingsRegionProps {
 }
 
 export default ({ world }: SettingsRegionProps) => {
-  const [hotkeys, setHotkeys] = useState(world.keyMap.getHotkeys());
+  const [hotkeys, setHotkeys] = useState(world.keyMap.hotkeys);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
@@ -31,7 +31,7 @@ export default ({ world }: SettingsRegionProps) => {
     >
       {!isCollapsed && (
         <ScrollView style={{ maxHeight: 400 }}>
-          {Object.values(world.keyMap.getHotkeyCommands()).map((command) => (
+          {Object.values(world.keyMap.hotkeyCommands).map((command) => (
             <TextField
               key={command.key}
               label={command.name}

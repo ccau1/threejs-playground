@@ -65,10 +65,16 @@ export default class WorldBase {
     }
   }
 
+  /**
+   * triggers once at initial draw
+   */
   init() {
     // implemented in child
   }
 
+  /**
+   * triggers on every requestAnimationFrame
+   */
   draw() {
     // needs to be implemented by child
     throw new Error("no draw method implemented");
@@ -132,12 +138,23 @@ export default class WorldBase {
     this._universe = universe;
   }
 
+  /**
+   * set this world as universe's selected world
+   */
   setAsSelected() {
     if (this.universe) {
       this.universe.selectedWorld = this._id;
     }
   }
 
+  /**
+   *
+   * @param width width of screen
+   * @param height height of screen
+   * @param pixelRatio pixel ratio of device
+   *
+   * set the screen size and pixel ratio
+   */
   setScreenSize(
     width: number,
     height: number,

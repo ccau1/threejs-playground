@@ -5,6 +5,6 @@ export default {
   key: "toggleFPV",
   name: "Toggle FPV",
   onDraw: (world: World) => {
-    world.camera.setIsFirstPersonView(!world.camera.getIsFirstPersonView());
+    world.camera.isFirstPersonView = !world.camera.isFirstPersonView;
   },
 };

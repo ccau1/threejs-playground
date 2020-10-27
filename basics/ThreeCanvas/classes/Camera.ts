@@ -4,42 +4,54 @@ import World from "./World";
 import TWEEN from "@tweenjs/tween.js";
 
 export default class Camera {
-  protected type: CameraType = "PerspectiveCamera";
+  protected _type: CameraType = "PerspectiveCamera";
   protected _camera: THREE.Camera;
   protected _position: Position3D = { x: 0, y: 10, z: 0 };
   protected _lookAt: Position3D = { x: 0, y: 0, z: 0 };
   protected world: World;
   protected near: number = 0.1;
   protected far: number = 1000;
-  protected zoom: number = 1;
+  protected _zoom: number = 1;
   // speed of camera movements
-  protected speed: number = 1;
-  protected isFirstPersonView: boolean = false;
-  protected firstPersonViewHeight = 0.5;
+  protected _speed: number = 1;
+  protected _isFirstPersonView: boolean = false;
+  protected _firstPersonViewHeight = 0.5;
 
   constructor(world: World, camera?: THREE.Camera) {
     this.world = world;
     this._camera = camera || this.createCamera();
   }
 
-  setCamera(camera: THREE.Camera) {
+  get camera() {
+    return this._camera;
+  }
+
+  set camera(camera: THREE.Camera) {
     this._camera = camera;
   }
 
-  getSpeed() {
-    return this.speed;
+  get speed() {
+    return this._speed;
   }
 
-  setSpeed(speed: number) {
-    this.speed = speed;
+  set speed(speed: number) {
+    this._speed = speed;
   }
 
-  getFirstPersonViewHeight() {
-    return this.firstPersonViewHeight;
+  get position() {
+    return this._position;
   }
 
-  setFirstPersonViewHeight(firstPersonViewHeight: number) {
-    this.firstPersonViewHeight = firstPersonViewHeight;
+  get lookAt() {
+    return this._lookAt;
+  }
+
+  get firstPersonViewHeight() {
+    return this._firstPersonViewHeight;
+  }
+
+  set firstPersonViewHeight(firstPersonViewHeight: number) {
+    this._firstPersonViewHeight = firstPersonViewHeight;
     if (this.isFirstPersonView) {
       this._position.y = firstPersonViewHeight;
     }
@@ -47,13 +59,21 @@ export default class Camera {
     this.syncPosition();
   }
 
-  getIsFirstPersonView() {
-    return this.isFirstPersonView;
+  get zoom() {
+    return this._zoom;
   }
 
-  setIsFirstPersonView(isFirstPersonView: boolean) {
-    const hasChanged = isFirstPersonView !== this.isFirstPersonView;
-    this.isFirstPersonView = isFirstPersonView;
+  set zoom(zoom: number) {
+    this.setPosition({ zoom });
+  }
+
+  get isFirstPersonView() {
+    return this._isFirstPersonView;
+  }
+
+  set isFirstPersonView(isFirstPersonView: boolean) {
+    const hasChanged = isFirstPersonView !== this._isFirstPersonView;
+    this._isFirstPersonView = isFirstPersonView;
     // TODO: need to handle animation
     if (hasChanged) {
       // define new camera position
@@ -87,14 +107,42 @@ export default class Camera {
     }
   }
 
-  getZoom() {
-    return this.zoom;
+  get type() {
+    return this._type;
   }
 
-  setZoom(zoom: number) {
-    this.setPosition({ zoom });
+  set type(type: CameraType) {
+    if (this._type === type) return;
+
+    this._type = type;
+
+    if (this.type === "OrthographicCamera") {
+      if (this.isFirstPersonView) {
+        this._position = { ...this.position, y: 10 };
+        this._lookAt = { ...this.position, y: this.firstPersonViewHeight };
+      } else {
+        this._position = { ...this.lookAt, y: 10 };
+        this._lookAt = { ...this.position, y: this.firstPersonViewHeight };
+      }
+    } else {
+      if (this.isFirstPersonView) {
+        this.position.y = this.firstPersonViewHeight;
+        this.lookAt.y = this.firstPersonViewHeight;
+        this.lookAt.z = 10;
+      } else {
+      }
+    }
+
+    this._camera = this.createCamera();
   }
 
+  /**
+   *
+   * @param pos new camera position, looking at position and/or zoom
+   *
+   * to set position of camera based on any of camera's
+   * position, look at position and zoom level
+   */
   setPosition(pos: {
     position?: Position3D;
     lookAt?: Position3D;
@@ -107,12 +155,19 @@ export default class Camera {
       this._lookAt = pos.lookAt;
     }
     if (pos.zoom) {
-      this.zoom = pos.zoom;
+      this._zoom = pos.zoom;
     }
 
     this.syncPosition();
   }
 
+  /**
+   *
+   * @param posDelta delta of position, lookAt and/or zoom
+   *
+   * update position based on change in camera position,
+   * look at position and/or zoom
+   */
   setPositionDelta(posDelta: {
     position?: Position3D;
     lookAt?: Position3D;
@@ -138,18 +193,13 @@ export default class Camera {
     });
   }
 
-  get position() {
-    return this._position;
-  }
-
-  get lookAt() {
-    return this._lookAt;
-  }
-
-  getLookAt() {
-    return this.lookAt;
-  }
-
+  /**
+   *
+   * @param x change in x (based on 2D space)
+   * @param y change in y (based on 2D space)
+   *
+   * pane screen by x,y delta
+   */
   paneDelta(x: number, y: number) {
     const damper = 100 / this.speed;
 
@@ -157,7 +207,7 @@ export default class Camera {
 
     this.camera.translateX(-x / this.zoom / damper);
     this.camera.translateY(y / this.zoom / damper);
-    if (this.type === "PerspectiveCamera") {
+    if (this._type === "PerspectiveCamera") {
       this.camera.translateZ(-y / this.zoom / damper);
       this.camera.position.y = originalPos.y;
     }
@@ -171,6 +221,13 @@ export default class Camera {
     });
   }
 
+  /**
+   *
+   * @param delta change in vector2D
+   * @param cameraEndpoint the endpoint to rotate (the other endpoint being center)
+   *
+   * rotate an endpoint ("camera" | "lookAt") around the other endpoint as center
+   */
   rotateDelta(delta: Position2D, cameraEndpoint: CameraEndpoint) {
     const damper = 1 * this.speed;
     this[cameraEndpoint === "camera" ? "_position" : "_lookAt"] =
@@ -193,43 +250,24 @@ export default class Camera {
     this.syncPosition();
   }
 
-  setType(type: CameraType) {
-    if (this.type === type) return;
-
-    this.type = type;
-
-    if (this.type === "OrthographicCamera") {
-      if (this.isFirstPersonView) {
-        this._position = { ...this.position, y: 10 };
-        this._lookAt = { ...this.position, y: this.firstPersonViewHeight };
-      } else {
-        this._position = { ...this.lookAt, y: 10 };
-        this._lookAt = { ...this.position, y: this.firstPersonViewHeight };
-      }
-    } else {
-      if (this.isFirstPersonView) {
-        this.position.y = this.firstPersonViewHeight;
-        this.lookAt.y = this.firstPersonViewHeight;
-        this.lookAt.z = 10;
-      } else {
-      }
-    }
-
-    this._camera = this.createCamera();
-  }
-
-  getType() {
-    return this.type;
-  }
-
+  /**
+   *
+   * @param width width of screen
+   * @param height height of screen
+   *
+   * update screen size in camera
+   */
   setScreenSize(width: number, height: number) {
     this._camera = this.createCamera();
   }
 
-  get camera() {
-    return this._camera;
-  }
-
+  /**
+   *
+   * @param camera three camera (optional)
+   *
+   * sync camera properties based on stored variables such as
+   * position, lookAt and zoom
+   */
   syncPosition(camera: THREE.Camera = this.camera) {
     if (this.type === "OrthographicCamera") {
       camera.position.set(this.lookAt.x, this.lookAt.y + 10, this.lookAt.z);
@@ -241,6 +279,9 @@ export default class Camera {
     (camera as any).updateProjectionMatrix();
   }
 
+  /**
+   * create camera based on type and sync its position
+   */
   protected createCamera() {
     let camera = null;
     switch (this.type) {

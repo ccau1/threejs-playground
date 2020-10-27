@@ -40,6 +40,14 @@ export default class Renderer {
     return this._renderer;
   }
 
+  /**
+   *
+   * @param width width of screen
+   * @param height height of screen
+   * @param pixelRatio pixel ratio based on device
+   *
+   * updates renderer's size and pixel ratio
+   */
   setScreenSize(
     width: number,
     height: number,
@@ -49,20 +57,33 @@ export default class Renderer {
     this.renderer.setPixelRatio(pixelRatio);
   }
 
+  /**
+   * render the scene and camera to screen
+   */
   render() {
     this.renderer.render(this.world.scene.scene, this.world.camera.camera);
     this.gl.endFrameEXP();
   }
 
+  /**
+   * start a looping cycle to keep rendering in each animation frame
+   */
   startDrawing() {
     this.isDrawing = true;
     this._drawLoop();
   }
 
+  /**
+   * stop a looping cycle for rendering
+   */
   stopDrawing() {
     this.isDrawing = false;
   }
 
+  /**
+   * a loop that keeps drawing the world's draw function
+   * on each animation frame
+   */
   protected _drawLoop() {
     requestAnimationFrame((time) => {
       if (!this.isDrawing) return;

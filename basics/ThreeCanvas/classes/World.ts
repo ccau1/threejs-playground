@@ -6,6 +6,9 @@ export default class World extends WorldBase {
     super(opts);
   }
 
+  /**
+   * triggers once at initial draw
+   */
   init() {
     this.camera.setPosition({
       position: { x: 0, y: 10, z: 0 },
@@ -51,7 +54,6 @@ export default class World extends WorldBase {
       side: THREE.DoubleSide,
     });
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    // ground.rotateX(85);
     ground.rotateX(-Math.PI * 0.5);
     ground.position.y = -0.01;
     this.scene.addObject("ground", ground);
@@ -66,10 +68,14 @@ export default class World extends WorldBase {
     console.log("set scene init");
   }
 
+  /**
+   * triggers on every requestAnimationFrame
+   */
   draw() {
     // implement draw handling
     console.log("drawing");
 
+    // trigger keymap draw
     this.keyMap.draw();
   }
 }
