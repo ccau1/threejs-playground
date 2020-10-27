@@ -9,5 +9,7 @@ export default {
   rotateHeadUp: "ArrowUp",
   rotateHeadDown: "ArrowDown",
 
+  jump: "Space",
+
   toggleFPV: "KeyP",
 } as { [comobos: string]: string };
