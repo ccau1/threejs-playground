@@ -16,18 +16,18 @@ export default {
       .onUpdate(() => {
         world.camera.syncPosition();
       })
+      .easing(TWEEN.Easing.Sinusoidal.Out)
       .onComplete(() => {
-        setTimeout(() => {
-          new TWEEN.Tween(world.camera.position)
-            .to({ y: originalYPosition }, 300)
-            .onUpdate(() => {
-              world.camera.syncPosition();
-            })
-            .onComplete(() => {
-              IS_JUMPING = false;
-            })
-            .start();
-        }, 200);
+        new TWEEN.Tween(world.camera.position)
+          .to({ y: originalYPosition }, 300)
+          .onUpdate(() => {
+            world.camera.syncPosition();
+          })
+          .easing(TWEEN.Easing.Cubic.In)
+          .onComplete(() => {
+            IS_JUMPING = false;
+          })
+          .start();
       })
       .start();
     world.camera.paneDelta(MOVE_SPEED, 0);
