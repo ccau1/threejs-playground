@@ -11,6 +11,7 @@
     "@react-native-community/picker": "^1.8.1",
     "@react-navigation/native": "^5.7.6",
     "@tweenjs/tween.js": "^17.6.0",
+    "ammojs-typed": "^1.0.6",
     "bson": "^4.2.0",
     "expo": "~39.0.2",
     "expo-gl": "^9.1.1",

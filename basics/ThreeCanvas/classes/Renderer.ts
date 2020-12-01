@@ -60,7 +60,8 @@ export default class Renderer {
   /**
    * render the scene and camera to screen
    */
-  render() {
+  render(time: number) {
+    this.world.scene.render(time);
     this.renderer.render(this.world.scene.scene, this.world.camera.camera);
     this.gl.endFrameEXP();
   }
@@ -89,7 +90,7 @@ export default class Renderer {
       if (!this.isDrawing) return;
       this.world.stats?.begin();
       this.world.draw();
-      this.render();
+      this.render(time);
       this.world.stats?.end();
       this._drawLoop();
       TWEEN.update(time);

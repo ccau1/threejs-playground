@@ -1,17 +1,34 @@
 import * as THREE from "three";
 import World from "./World";
+import PhysicsWorld from "./PhysicsWorld";
 
 export default class Scene {
   protected _scene: THREE.Scene = new THREE.Scene();
-  protected meshPool: MeshPool = {};
+  protected _meshPool: MeshPool = {};
   protected world: World;
+  protected physicsWorld: PhysicsWorld;
 
   constructor(world: World) {
     this.world = world;
+    this.physicsWorld = new PhysicsWorld(this);
   }
 
   get scene() {
     return this._scene;
+  }
+
+  get meshPool() {
+    return this._meshPool;
+  }
+
+  /**
+   *
+   * @param deltaTime delta time since last render
+   *
+   * handle any rendering needs plugged into scene
+   */
+  render(deltaTime: number) {
+    this.physicsWorld.render(deltaTime);
   }
 
   /**
