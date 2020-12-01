@@ -9,6 +9,7 @@ import hotkeys, { commands as hotkeyCommands } from "../../hotkeys";
 import { Platform } from "react-native";
 import { ObjectID } from "bson";
 import Universe from "../Universe";
+import World from "../World";
 
 // prop object orientation to up
 // THREE.Object3D.DefaultUp.set(0, 0, 1);
@@ -50,7 +51,7 @@ export default class WorldBase {
     }
 
     // instantiate our classes
-    this._scene = new Scene(this);
+    this._scene = opts.scene || new Scene(this);
     this._camera = new Camera(this);
     this.gestures = new Gestures(this);
     this._keyMap = new KeyMap(this, hotkeys, hotkeyCommands);
@@ -136,6 +137,27 @@ export default class WorldBase {
 
   set universe(universe: Universe | undefined) {
     this._universe = universe;
+  }
+
+  clone(options?: { shareScene?: boolean; _id?: string; universe?: Universe }) {
+    const opts = {
+      shareScene: true,
+      _id: new ObjectID().toHexString(),
+      ...options,
+    };
+
+    const newWorld = new World({
+      _id: opts._id,
+      width: this._width,
+      height: this._height,
+      gl: this.gl,
+      initDraw: this._initDraw,
+      pixelRatio: this.pixelRatio,
+      universe: opts.universe || this.universe,
+      scene: opts.shareScene ? this._scene : undefined,
+    });
+
+    return newWorld;
   }
 
   /**

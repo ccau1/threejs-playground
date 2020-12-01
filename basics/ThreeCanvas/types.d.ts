@@ -47,6 +47,7 @@ interface WorldBaseConstructor {
   initDraw?: boolean;
   pixelRatio?: number;
   universe?: Universe;
+  scene?: Scene;
 }
 
 interface Worlds {

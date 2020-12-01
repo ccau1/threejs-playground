@@ -35,7 +35,12 @@ export default class Scene {
     object3D: THREE.Object3D,
     options?: { entangled?: boolean },
   ) {
-    if (this.meshPool[id]) throw new Error("object already added");
+    // FIXME: if no check, could add scene object again without
+    // removing previous one. Also can become redundant in constantly
+    // replacing. Only removing check because of cloning, but should
+    // update how we add/manage objects in general
+
+    // if (this.meshPool[id]) throw new Error("object already added");
     const opts = {
       entangled: true,
       ...options,
