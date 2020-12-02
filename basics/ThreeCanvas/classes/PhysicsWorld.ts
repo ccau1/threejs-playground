@@ -1,4 +1,4 @@
-import World from "./World";
+import * as THREE from "three";
 import Ammo from "ammojs-typed";
 import Scene from "./Scene";
 
@@ -6,9 +6,11 @@ export default class PhysicsWorld {
   protected scene: Scene;
   protected ammo?: typeof Ammo;
   protected physicsWorld?: Ammo.btDiscreteDynamicsWorld;
+  protected clock: THREE.Clock;
 
   constructor(scene: Scene) {
     this.scene = scene;
+    this.clock = new THREE.Clock();
     Ammo().then((ammo) => {
       this.ammo = ammo;
       this.setupPhysicsWorld();
@@ -22,7 +24,8 @@ export default class PhysicsWorld {
    * go through each object in the scene and update
    * transform based on ammo
    */
-  render(deltaTime: number) {
+  render(_deltaTime: number) {
+    let deltaTime = this.clock.getDelta();
     // Step world
     this.physicsWorld?.stepSimulation(deltaTime, 10);
 
