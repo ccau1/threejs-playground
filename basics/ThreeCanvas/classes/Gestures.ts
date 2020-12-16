@@ -4,6 +4,7 @@ import {
 } from "../contexts/TouchTrackerContext";
 import WorldBase from "./baseClasses/WorldBase";
 import GesturesBase from "./baseClasses/GesturesBase";
+import { setCursorPosition } from "../threeUtils";
 
 export default class Gestures extends GesturesBase {
   constructor(world: WorldBase) {
@@ -11,13 +12,9 @@ export default class Gestures extends GesturesBase {
   }
 
   onGestureHover = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
-    console.log(
-      "onGestureHover",
-      touches[0].x,
-      touches[0].y,
-      touches[0].deltaXInterval,
-      touches[0].deltaYInterval,
-    );
+    // set cursor position
+    const cursor = this.world.scene.scene.getObjectByName("cursor");
+    cursor && setCursorPosition(touches[0], cursor, this.world);
   };
 
   /**

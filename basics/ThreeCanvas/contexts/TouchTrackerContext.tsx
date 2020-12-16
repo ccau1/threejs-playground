@@ -710,8 +710,6 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
         }) &&
         !touchesRef.current[0]?.isTouched
       ) {
-        console.log("touchesRef.current", touchesRef.current);
-
         const x = ev.x - dimensions.left;
         const y = ev.y - dimensions.top;
 

@@ -35,7 +35,7 @@ export default class World extends WorldBase {
     this.scene.addObject("directionalLightHelper", directionalLightHelper);
 
     // draw axes helper
-    const axesHelper = new THREE.AxesHelper(50);
+    const axesHelper = new THREE.AxesHelper();
     this.scene.addObject("axesHelper", axesHelper);
 
     // draw ground
@@ -66,6 +66,12 @@ export default class World extends WorldBase {
     cube.receiveShadow = true;
     this.scene.addObject("cube01", cube);
     console.log("set scene init");
+
+    // draw a cursor
+    const cursorGeometry = new THREE.ConeGeometry(0.2, 1, 3);
+    const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const cursor = new THREE.Mesh(cursorGeometry, cursorMaterial);
+    this.scene.addObject("cursor", cursor);
   }
 
   /**
