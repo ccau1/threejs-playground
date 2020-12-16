@@ -62,11 +62,12 @@ export default class Universe {
       ? Object.keys(this.worlds)
           .filter((w) => targetWorlds?.includes(w))
           .map((w) => this.worlds[w])
-      : Object.keys(this.worlds);
+      : Object.values(this.worlds);
+
     // add to selected worlds
-    Object.values(targetedWorlds).forEach((w) =>
-      w.scene.addObject(id, object, addObjectOptions),
-    );
+    Object.values(targetedWorlds).forEach((w) => {
+      w.scene.addObject(id, object, addObjectOptions);
+    });
   }
 
   /**
