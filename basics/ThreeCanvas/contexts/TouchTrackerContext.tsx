@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
   PanResponder,
@@ -7,6 +7,7 @@ import {
   GestureResponderEvent,
 } from "react-native";
 import useDimensions from "../../@hooks/web/useDimensions";
+import { isHtmlPlatform } from "../utils";
 
 const DOUBLE_PRESS_DELAY: number = 200;
 
@@ -53,11 +54,11 @@ export interface TouchTrackerContextProps {
   getTouches: () => TouchTrackerEvent[];
   getTouchSummary: () => TouchSummary;
   addTouchListener: (
-    type: "start" | "move" | "end" | "double",
+    type: "start" | "move" | "end" | "double" | "hover",
     fn: TouchTrackerListener,
   ) => void;
   removeTouchListener: (
-    type: "start" | "move" | "end" | "double",
+    type: "start" | "move" | "end" | "double" | "hover",
     fn: TouchTrackerListener,
   ) => void;
 }
@@ -66,29 +67,29 @@ export interface TouchTrackerProviderProps {
   children: ChildrenElement;
 }
 
-export const TouchTrackerContext = React.createContext<
-  TouchTrackerContextProps
->({
-  getTouches: () => [],
-  getTouchSummary: () => ({
-    scaleDelta: 0, // resize from original size
-    rotateDelta: 0,
-    dragDelta: { x: 0, y: 0 },
-    scaleDeltaInterval: 0,
-    rotateDeltaInterval: 0,
-    dragDeltaInterval: { x: 0, y: 0 },
-    fingersCenter: { x: 0, y: 0 },
-    isOutOfBound: false,
-  }),
-  addTouchListener: (
-    type: "start" | "move" | "end" | "double",
-    fn: TouchTrackerListener,
-  ) => null,
-  removeTouchListener: (
-    type: "start" | "move" | "end" | "double",
-    fn: TouchTrackerListener,
-  ) => null,
-});
+export const TouchTrackerContext = React.createContext<TouchTrackerContextProps>(
+  {
+    getTouches: () => [],
+    getTouchSummary: () => ({
+      scaleDelta: 0, // resize from original size
+      rotateDelta: 0,
+      dragDelta: { x: 0, y: 0 },
+      scaleDeltaInterval: 0,
+      rotateDeltaInterval: 0,
+      dragDeltaInterval: { x: 0, y: 0 },
+      fingersCenter: { x: 0, y: 0 },
+      isOutOfBound: false,
+    }),
+    addTouchListener: (
+      type: "start" | "move" | "end" | "double" | "hover",
+      fn: TouchTrackerListener,
+    ) => null,
+    removeTouchListener: (
+      type: "start" | "move" | "end" | "double" | "hover",
+      fn: TouchTrackerListener,
+    ) => null,
+  },
+);
 
 const Provider = ({ children }: TouchTrackerProviderProps) => {
   //For future state use
@@ -100,7 +101,7 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
 
   const topLeftDivRef = useRef<HTMLDivElement | any>(null);
 
-  const touchSummaryRef = useRef<TouchSummary>({
+  const DEFAULT_TOUCH_SUMMARY = {
     scaleDelta: 0,
     rotateDelta: 0,
     dragDelta: {
@@ -118,7 +119,9 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
       y: 0,
     },
     isOutOfBound: false,
-  });
+  };
+
+  const touchSummaryRef = useRef<TouchSummary>(DEFAULT_TOUCH_SUMMARY);
 
   const lastTapRef = useRef<number | null>(null);
 
@@ -127,11 +130,13 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
     move: TouchTrackerListener[];
     end: TouchTrackerListener[];
     double: TouchTrackerListener[];
+    hover: TouchTrackerListener[];
   }>({
     start: [],
     move: [],
     end: [],
     double: [],
+    hover: [],
   });
   const value = useMemo<TouchTrackerContextProps>(() => {
     const innerTouchFns = touchFns;
@@ -650,6 +655,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           );
           // }, DOUBLE_PRESS_DELAY);
         }
+        touchesRef.current.splice(0);
+        touchSummaryRef.current = DEFAULT_TOUCH_SUMMARY;
       },
       onPanResponderTerminate: (
         evt: GestureResponderEvent,
@@ -675,6 +682,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           clearTimeout(panEndTimeout.current);
         }
         lastTapRef.current = now;
+        touchesRef.current.splice(0);
+        touchSummaryRef.current = DEFAULT_TOUCH_SUMMARY;
       },
       onShouldBlockNativeResponder: (
         evt: GestureResponderEvent,
@@ -686,6 +695,73 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
       },
     }),
   );
+
+  const mouseActions = useRef<{
+    [key: string]: (ev: MouseEvent) => void;
+  }>({});
+
+  useEffect(() => {
+    mouseActions.current.onMouseMove = (ev: MouseEvent) => {
+      if (
+        dimensions &&
+        !isOutOfBound({
+          locationX: ev.x,
+          locationY: ev.y,
+        }) &&
+        !touchesRef.current[0]?.isTouched
+      ) {
+        console.log("touchesRef.current", touchesRef.current);
+
+        const x = ev.x - dimensions.left;
+        const y = ev.y - dimensions.top;
+
+        const touch: TouchTrackerEvent = {
+          x,
+          y,
+          lastXInterval: touchesRef.current[0]?.x || 0,
+          lastYInterval: touchesRef.current[0]?.y || 0,
+          force: 0,
+          isTouched: false,
+          target: (ev.target as any).tagName,
+          originalX: x,
+          originalY: y,
+          deltaX: 0,
+          deltaY: 0,
+          deltaXInterval: x - (touchesRef.current[0]?.x || 0),
+          deltaYInterval: y - (touchesRef.current[0]?.y || 0),
+          originalCenterAngle: 0,
+          deltaCenterAngle: 0,
+          deltaCenterAngleInterval: 0,
+          originalCenterDistance: 0,
+          deltaCenterDistance: 0,
+          deltaCenterDistanceInterval: 0,
+        };
+        touchesRef.current = [touch];
+
+        const touchSummary: TouchSummary = {
+          ...DEFAULT_TOUCH_SUMMARY,
+          fingersCenter: {
+            x: touch.x,
+            y: touch.y,
+          },
+        };
+        touchSummaryRef.current = touchSummary;
+
+        touchFns.hover.forEach((fn) => fn([touch], touchSummary));
+      }
+    };
+  }, [dimensions, touchesRef.current, touchSummaryRef.current]);
+
+  useEffect(() => {
+    const eventListener = (type: string) => (ev: MouseEvent) =>
+      mouseActions.current[type](ev);
+    if (dimensions && isHtmlPlatform()) {
+      window.addEventListener("mousemove", eventListener("onMouseMove"));
+
+      return () =>
+        window.removeEventListener("mousemove", eventListener("onMouseMove"));
+    }
+  }, [dimensions]);
 
   return (
     <TouchTrackerContext.Provider value={value}>

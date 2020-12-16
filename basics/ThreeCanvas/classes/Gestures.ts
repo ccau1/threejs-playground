@@ -10,6 +10,16 @@ export default class Gestures extends GesturesBase {
     super(world);
   }
 
+  onGestureHover = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
+    console.log(
+      "onGestureHover",
+      touches[0].x,
+      touches[0].y,
+      touches[0].deltaXInterval,
+      touches[0].deltaYInterval,
+    );
+  };
+
   /**
    *
    * @param touches state of each finger's touch
