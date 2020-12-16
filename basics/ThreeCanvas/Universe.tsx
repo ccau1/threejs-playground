@@ -11,17 +11,13 @@ export default () => {
   const universe = useRef(new Universe([world1, world2])).current;
   // draw hemisphere light
   const hemisphereLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 1);
-  universe.addObject("hemisphereLight", hemisphereLight, {
-    targetWorlds: [world1._id],
-  });
+  universe.addObject("hemisphereLight", hemisphereLight);
 
   // draw directional light
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   directionalLight.castShadow = true;
   directionalLight.position.set(10, 50, 50);
-  universe.addObject("directionalLight", directionalLight, {
-    targetWorlds: [world1._id],
-  });
+  universe.addObject("directionalLight", directionalLight);
 
   // draw directional light helper
   const directionalLightHelper = new THREE.DirectionalLightHelper(
@@ -29,13 +25,11 @@ export default () => {
     10,
     "#fff",
   );
-  universe.addObject("directionalLightHelper", directionalLightHelper, {
-    targetWorlds: [world1._id],
-  });
+  universe.addObject("directionalLightHelper", directionalLightHelper);
 
   // draw axes helper
   const axesHelper = new THREE.AxesHelper();
-  universe.addObject("axesHelper", axesHelper, { targetWorlds: [world1._id] });
+  universe.addObject("axesHelper", axesHelper);
 
   // draw ground
   const groundPoints = [
@@ -55,7 +49,7 @@ export default () => {
   const ground = new THREE.Mesh(groundGeometry, groundMaterial);
   ground.rotateX(-Math.PI * 0.5);
   ground.position.y = -0.01;
-  universe.addObject("ground", ground, { targetWorlds: [world1._id] });
+  universe.addObject("ground", ground);
 
   // draw box
   var geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -63,14 +57,14 @@ export default () => {
   var cube = new THREE.Mesh(geometry, material);
   cube.position.set(0, 0.5, 0);
   cube.receiveShadow = true;
-  universe.addObject("cube01", cube, { targetWorlds: [world1._id] });
+  universe.addObject("cube01", cube);
   console.log("set scene init");
 
   // draw a cursor
   const cursorGeometry = new THREE.ConeGeometry(0.2, 1, 3);
   const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
   const cursor = new THREE.Mesh(cursorGeometry, cursorMaterial);
-  universe.addObject("cursor", cursor, { targetWorlds: [world1._id] });
+  universe.addObject("cursor", cursor);
 
   return (
     <>

@@ -1,3 +1,4 @@
+import Scene from "./Scene";
 import World from "./World";
 
 export default class Universe {
@@ -79,14 +80,20 @@ export default class Universe {
    */
   removeObject(id: string, targetWorlds?: string[]) {
     // only select worlds specified in targetWorlds or all if none specified
-    const targetedWorlds = targetWorlds?.length
+    const targetedWorlds: World[] = targetWorlds?.length
       ? Object.keys(this.worlds)
           .filter((w) => targetWorlds.includes(w))
           .map((w) => this.worlds[w])
       : Object.keys(this.worlds);
     // remove object from all selected worlds
-    Object.values(targetedWorlds).forEach((w) =>
-      w.scene.removeObject(id, { skipEntangled: true }),
-    );
+    Object.values(
+      Object.values(targetedWorlds).reduce<{ [key: string]: Scene }>(
+        (wBucket, w) => {
+          wBucket[w.scene.scene.id] = w.scene;
+          return wBucket;
+        },
+        {},
+      ),
+    ).forEach((w) => w.removeObject(id, { skipEntangled: true }));
   }
 }
