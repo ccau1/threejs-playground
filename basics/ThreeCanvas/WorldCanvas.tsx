@@ -4,13 +4,12 @@ import World from "./classes/World";
 import DimensionsTracker from "../components/DimensionsTracker";
 import { ReactElementSize } from "../@hooks/web/useDimensions";
 import { View } from "react-native";
-import SettingsRegion from "./SettingsRegion";
-import HotkeysRegion from "./HotkeysRegion";
 import ThreeCanvasContexts from "./ThreeCanvasContexts";
 import useGestures from "./canvasHooks/useGestures";
 import useKeyMaps from "./canvasHooks/useKeyMaps";
 import useThreeStats from "./canvasHooks/useThreeStats";
 import useResize from "./canvasHooks/useResize";
+import Panel from "./classes/baseClasses/Panel";
 
 interface WorldCanvasProps {
   world?: World;
@@ -24,8 +23,6 @@ const WorldCanvas = ({ world: propWorld }: WorldCanvasProps) => {
 
   // connect dom gestures to the world
   useGestures(world);
-  // connect dom key press events to the world
-  useKeyMaps(world);
   // connect world's stats to the dom
   useThreeStats(world, containerRef);
   // connect dom's resize events to the world
@@ -34,8 +31,6 @@ const WorldCanvas = ({ world: propWorld }: WorldCanvasProps) => {
   return (
     <View ref={containerRef} style={{ flex: 1 }}>
       <GLView style={{ flex: 1 }} onContextCreate={(gl) => (world.gl = gl)} />
-      {world && <SettingsRegion world={world} />}
-      {world && <HotkeysRegion world={world} />}
       <DimensionsTracker onResize={setDimensions} />
     </View>
   );
@@ -43,12 +38,14 @@ const WorldCanvas = ({ world: propWorld }: WorldCanvasProps) => {
 
 interface WorldCanvasWrapperProps {
   world?: World;
+  panels?: Array<Panel>;
 }
 
-export default ({ world }: WorldCanvasWrapperProps) => {
+export default ({ world, panels }: WorldCanvasWrapperProps) => {
   return (
     <ThreeCanvasContexts>
       <WorldCanvas world={world} />
+      {panels?.map((panel) => panel.render({ world }))}
     </ThreeCanvasContexts>
   );
 };

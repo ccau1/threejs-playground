@@ -1,19 +1,21 @@
+import Panels from "./Panels";
 import Scene from "./Scene";
 import World from "./World";
 
 export default class Universe {
-  protected worlds: Worlds = {};
+  protected _worlds: Worlds = {};
   protected _selectedWorld: string = "";
+  protected _panels = new Panels();
 
   constructor(worlds?: Worlds | World[]) {
     if (worlds) {
       if (Array.isArray(worlds)) {
-        this.worlds = worlds.reduce<Worlds>((worldObj, world) => {
+        this._worlds = worlds.reduce<Worlds>((worldObj, world) => {
           worldObj[world._id] = world;
           return worldObj;
         }, {});
       } else {
-        this.worlds = worlds || {};
+        this._worlds = worlds || {};
       }
 
       Object.values(this.worlds).forEach((w) => (w.universe = this));
@@ -22,14 +24,37 @@ export default class Universe {
     }
   }
 
-  get selectedWorld() {
-    return this._selectedWorld;
+  get panels() {
+    return this._panels;
   }
 
-  set selectedWorld(selectedWorld: string) {
-    if (!this.worlds[selectedWorld])
-      throw new Error("selectedWorld does not exists");
-    this._selectedWorld = selectedWorld;
+  get worlds() {
+    return this._worlds;
+  }
+
+  get world() {
+    return this.selectedWorld as World;
+  }
+
+  get selectedWorld() {
+    return this._worlds[this._selectedWorld];
+  }
+
+  set selectedWorld(selectedWorld: World) {
+    this.setSelectedWorld(selectedWorld);
+  }
+
+  /**
+   *
+   * @param selectedWorld selected world object or id
+   *
+   * set a world as the selected world
+   */
+  setSelectedWorld(selectedWorld: string | World) {
+    const worldId =
+      typeof selectedWorld === "string" ? selectedWorld : selectedWorld._id;
+    if (!this.worlds[worldId]) throw new Error("selectedWorld does not exists");
+    this._selectedWorld = worldId;
   }
 
   /**

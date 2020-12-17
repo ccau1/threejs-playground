@@ -82,7 +82,7 @@ export default class WorldBase {
   }
 
   get isSelected() {
-    return !this._universe || this._universe.selectedWorld === this._id;
+    return !this._universe || this._universe.selectedWorld._id === this._id;
   }
 
   get gl(): ExpoWebGLRenderingContext | undefined {
@@ -165,7 +165,7 @@ export default class WorldBase {
    */
   setAsSelected() {
     if (this.universe) {
-      this.universe.selectedWorld = this._id;
+      this.universe.selectedWorld = this;
     }
   }
 

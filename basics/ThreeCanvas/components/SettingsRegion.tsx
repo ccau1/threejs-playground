@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { View, StatusBar } from "react-native";
-import World from "./classes/World";
-import PickerField from "./components/PickerField";
-import RegionHeader from "./components/RegionHeader";
-import SwitchField from "./components/SwitchField";
-import TextField from "./components/TextField";
+import World from "../classes/World";
+import PickerField from "./PickerField";
+import RegionHeader from "./RegionHeader";
+import SwitchField from "./SwitchField";
+import TextField from "./TextField";
 
 /**
  * Display all world settings here
@@ -45,9 +45,6 @@ export default ({ world }: SettingsRegionProps) => {
   return (
     <View
       style={{
-        position: "absolute",
-        top: 0,
-        right: 0,
         borderColor: "#e6e6e6",
         borderWidth: 1,
         backgroundColor: "#fff",

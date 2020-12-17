@@ -22,7 +22,6 @@ export default class World extends WorldBase {
    */
   draw() {
     // implement draw handling
-    console.log("drawing");
 
     // trigger keymap draw
     this.keyMap.draw();

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
-import World from "./classes/World";
-import TextField from "./components/TextField";
-import RegionHeader from "./components/RegionHeader";
+import World from "../classes/World";
+import TextField from "./TextField";
+import RegionHeader from "./RegionHeader";
 
 /**
  * Display all world settings here
@@ -19,9 +19,6 @@ export default ({ world }: SettingsRegionProps) => {
   return (
     <View
       style={{
-        position: "absolute",
-        bottom: 0,
-        right: 0,
         borderColor: "#e6e6e6",
         borderWidth: 1,
         backgroundColor: "#fff",

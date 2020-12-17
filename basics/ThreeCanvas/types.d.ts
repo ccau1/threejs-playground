@@ -53,3 +53,16 @@ interface WorldBaseConstructor {
 interface Worlds {
   [worldId: string]: World;
 }
+
+interface PanelConstructor {
+  _id: string;
+  visible?: boolean;
+  render: (opts: PanelRenderProps) => any;
+  worldTargets?: WorldTargets;
+}
+
+type WorldTargets = Array<string | World>;
+
+interface PanelRenderProps {
+  world: World;
+}
