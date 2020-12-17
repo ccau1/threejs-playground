@@ -4,12 +4,11 @@ import World from "./classes/World";
 import DimensionsTracker from "../components/DimensionsTracker";
 import { ReactElementSize } from "../@hooks/web/useDimensions";
 import { View } from "react-native";
-import ThreeCanvasContexts from "./ThreeCanvasContexts";
 import useGestures from "./canvasHooks/useGestures";
-import useKeyMaps from "./canvasHooks/useKeyMaps";
 import useThreeStats from "./canvasHooks/useThreeStats";
 import useResize from "./canvasHooks/useResize";
 import Panel from "./classes/baseClasses/Panel";
+import TouchTrackerContext from "./contexts/TouchTrackerContext";
 
 interface WorldCanvasProps {
   world?: World;
@@ -43,9 +42,11 @@ interface WorldCanvasWrapperProps {
 
 export default ({ world, panels }: WorldCanvasWrapperProps) => {
   return (
-    <ThreeCanvasContexts>
+    <TouchTrackerContext.Provider>
       <WorldCanvas world={world} />
-      {panels?.map((panel) => panel.render({ world }))}
-    </ThreeCanvasContexts>
+      {panels?.map(({ render: RenderComp }, index) => (
+        <RenderComp key={index} world={world} />
+      ))}
+    </TouchTrackerContext.Provider>
   );
 };

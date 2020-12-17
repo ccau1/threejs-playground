@@ -76,7 +76,17 @@ interface GestureControl {
   onDrag?: (event: GestureControlEvent) => void;
   onDragEnd?: (event: GestureControlEvent) => void;
   onDoubleTap?: (event: GestureControlEvent) => void;
+  init?: (options: GestureControlInitOptions) => void;
+  destroy?: (options: GestureControlDestroyOptions) => void;
   [type: GestureControlType]: (event: GestureControlEvent) => void;
+}
+
+interface GestureControlInitOptions {
+  universe: Universe;
+}
+
+interface GestureControlDestroyOptions {
+  universe: Universe;
 }
 
 type GestureControlType =

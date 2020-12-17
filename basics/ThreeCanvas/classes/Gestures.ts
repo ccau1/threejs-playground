@@ -18,6 +18,7 @@ export default class Gestures extends GesturesBase {
    * on touch gesture hover
    */
   onGestureHover = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
+    // console.log("gesture hover", touches, summary);
     this.triggerGestureControls("onHover", { touches, summary });
   };
 
@@ -29,6 +30,7 @@ export default class Gestures extends GesturesBase {
    * on touch gesture start
    */
   onGestureStart = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
+    // console.log("gesture start", touches, summary);
     this.triggerGestureControls("onDragStart", { touches, summary });
   };
 
@@ -40,7 +42,7 @@ export default class Gestures extends GesturesBase {
    * on touch gesture move
    */
   onGestureMove = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
-    console.log("gesture move", touches, summary);
+    // console.log("gesture move", touches, summary);
     this.triggerGestureControls("onDrag", { touches, summary });
   };
 
@@ -55,7 +57,7 @@ export default class Gestures extends GesturesBase {
     touches: TouchTrackerEvent[],
     summary: TouchSummary,
   ) => {
-    console.log("gesture double tap", touches, summary);
+    // console.log("gesture double tap", touches, summary);
     this.triggerGestureControls("onDoubleTap", { touches, summary });
   };
 
@@ -67,7 +69,7 @@ export default class Gestures extends GesturesBase {
    * on touch gesture end
    */
   onGestureEnd = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
-    console.log("gesture end", touches, summary);
+    // console.log("gesture end", touches, summary);
     this.triggerGestureControls("onDragEnd", { touches, summary });
   };
 }

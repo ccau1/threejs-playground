@@ -7,7 +7,7 @@ export default class Universe {
   protected _worlds: Worlds = {};
   protected _selectedWorld: string = "";
   protected _panels = new Panels();
-  protected _gestureControls = new GestureControls();
+  protected _gestureControls = new GestureControls(this);
 
   constructor(worlds?: Worlds | World[]) {
     if (worlds) {
