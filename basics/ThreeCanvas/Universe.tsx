@@ -7,7 +7,7 @@ import WorldCanvas from "./WorldCanvas";
 
 interface UniverseProps {
   universe?: Universe;
-  onUniverseCreate?: (universe: Universe) => Promise<void>;
+  onUniverseCreate?: (universe: Universe) => void | Promise<void>;
 }
 
 export default ({
