@@ -1,3 +1,4 @@
+import GestureControls from "./GestureControls";
 import Panels from "./Panels";
 import Scene from "./Scene";
 import World from "./World";
@@ -6,6 +7,7 @@ export default class Universe {
   protected _worlds: Worlds = {};
   protected _selectedWorld: string = "";
   protected _panels = new Panels();
+  protected _gestureControls = new GestureControls();
 
   constructor(worlds?: Worlds | World[]) {
     if (worlds) {
@@ -22,6 +24,10 @@ export default class Universe {
 
       this._selectedWorld = Object.values(this.worlds)[0]?._id || "";
     }
+  }
+
+  get gestureControls() {
+    return this._gestureControls;
   }
 
   get panels() {

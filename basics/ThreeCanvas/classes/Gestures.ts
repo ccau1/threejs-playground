@@ -4,17 +4,21 @@ import {
 } from "../contexts/TouchTrackerContext";
 import WorldBase from "./baseClasses/WorldBase";
 import GesturesBase from "./baseClasses/GesturesBase";
-import { setCursorPosition } from "../threeUtils";
 
 export default class Gestures extends GesturesBase {
   constructor(world: WorldBase) {
     super(world);
   }
 
+  /**
+   *
+   * @param touches state of each finger's touch
+   * @param summary a summary state of all fingers touched
+   *
+   * on touch gesture hover
+   */
   onGestureHover = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
-    // set cursor position
-    const cursor = this.world.scene.scene.getObjectByName("cursor");
-    cursor && setCursorPosition(touches[0], cursor, this.world);
+    this.triggerGestureControls("onHover", { touches, summary });
   };
 
   /**
@@ -25,8 +29,7 @@ export default class Gestures extends GesturesBase {
    * on touch gesture start
    */
   onGestureStart = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
-    console.log("gesture start", touches, summary);
-    this.world.setAsSelected();
+    this.triggerGestureControls("onDragStart", { touches, summary });
   };
 
   /**
@@ -37,20 +40,8 @@ export default class Gestures extends GesturesBase {
    * on touch gesture move
    */
   onGestureMove = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
-    console.log("onGestureMove");
-
-    const isShiftKeyDown =
-      this.world.keyMap["ShiftLeft"] || this.world.keyMap["ShiftRight"];
-    if (this.world.camera.type === "OrthographicCamera" || isShiftKeyDown) {
-      // pane screen
-      this.paneCamera(summary);
-    } else {
-      // rotate screen
-      this.rotateCamera(
-        summary,
-        this.world.camera.isFirstPersonView ? "lookAt" : "camera",
-      );
-    }
+    console.log("gesture move", touches, summary);
+    this.triggerGestureControls("onDrag", { touches, summary });
   };
 
   /**
@@ -60,9 +51,13 @@ export default class Gestures extends GesturesBase {
    *
    * on touch gesture double tap
    */
-  onGestureDoubleTap(touches: TouchTrackerEvent[], summary: TouchSummary) {
+  onGestureDoubleTap = (
+    touches: TouchTrackerEvent[],
+    summary: TouchSummary,
+  ) => {
     console.log("gesture double tap", touches, summary);
-  }
+    this.triggerGestureControls("onDoubleTap", { touches, summary });
+  };
 
   /**
    *
@@ -71,7 +66,8 @@ export default class Gestures extends GesturesBase {
    *
    * on touch gesture end
    */
-  onGestureEnd(touches: TouchTrackerEvent[], summary: TouchSummary) {
+  onGestureEnd = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
     console.log("gesture end", touches, summary);
-  }
+    this.triggerGestureControls("onDragEnd", { touches, summary });
+  };
 }

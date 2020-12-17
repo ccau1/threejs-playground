@@ -66,3 +66,29 @@ type WorldTargets = Array<string | World>;
 interface PanelRenderProps {
   world: World;
 }
+
+interface GestureControl {
+  name: string;
+  priority: number;
+  worldTargets?: Array<string | World>;
+  onHover?: (event: GestureControlEvent) => void;
+  onDragStart?: (event: GestureControlEvent) => void;
+  onDrag?: (event: GestureControlEvent) => void;
+  onDragEnd?: (event: GestureControlEvent) => void;
+  onDoubleTap?: (event: GestureControlEvent) => void;
+  [type: GestureControlType]: (event: GestureControlEvent) => void;
+}
+
+type GestureControlType =
+  | "onHover"
+  | "onDragStart"
+  | "onDrag"
+  | "onDragEnd"
+  | "onDoubleTap";
+
+interface GestureControlEvent {
+  touches: TouchTrackerEvent[];
+  summary: TouchSummary;
+  world: World;
+  stopPropagation: () => void;
+}

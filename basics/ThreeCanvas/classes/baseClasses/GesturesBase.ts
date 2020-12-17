@@ -2,6 +2,7 @@ import {
   TouchSummary,
   TouchTrackerEvent,
 } from "../../contexts/TouchTrackerContext";
+import World from "../World";
 import WorldBase from "./WorldBase";
 
 export default class GesturesBase {
@@ -76,5 +77,40 @@ export default class GesturesBase {
    */
   rotateCamera(summary: TouchSummary, cameraEndpoint: CameraEndpoint) {
     this.world.camera.rotateDelta(summary.dragDeltaInterval, cameraEndpoint);
+  }
+
+  triggerGestureControls(
+    type: GestureControlType,
+    {
+      touches,
+      summary,
+    }: { touches: TouchTrackerEvent[]; summary: TouchSummary },
+  ) {
+    // controls that has been filtered for this world and sorted
+    // based on priority, from highest to lowest
+    const controls = Object.values(
+      this.world.universe?.gestureControls.controls || {},
+    )
+      .filter(
+        (c) =>
+          c[type] ||
+          !c.worldTargets?.length ||
+          c.worldTargets.some((wt: string | World) =>
+            typeof wt === "string" ? this.world._id === wt : this.world === wt,
+          ),
+      )
+      .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+
+    // have a flag that indicates whether the loop should continue
+    let isContinue = true;
+    for (const control of controls) {
+      control[type]?.({
+        touches,
+        summary,
+        world: this.world,
+        stopPropagation: () => (isContinue = false),
+      });
+      if (!isContinue) break;
+    }
   }
 }

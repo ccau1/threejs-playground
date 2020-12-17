@@ -2,10 +2,10 @@ import React, { useCallback, useRef } from "react";
 import Universe from "./ThreeCanvas/classes/Universe";
 import UniverseComponent from "./ThreeCanvas/Universe";
 import * as THREE from "three";
-import ReactPanel from "./ThreeCanvas/classes/ReactPanel";
 import SettingsRegion from "./ThreeCanvas/components/SettingsRegion";
 import { View } from "react-native";
 import HotkeysRegion from "./ThreeCanvas/components/HotkeysRegion";
+import { setCursorPosition } from "./ThreeCanvas/threeUtils";
 
 export default function App() {
   const _universe = useRef<Universe>();
@@ -70,29 +70,59 @@ export default function App() {
     const cursor = new THREE.Mesh(cursorGeometry, cursorMaterial);
     universe.addObject("cursor", cursor);
 
-    universe.panels.addPanel(
-      new ReactPanel({
-        _id: "settings",
-        render: ({ world }) => {
-          return (
-            <View style={{ position: "absolute", top: 0, right: 0 }}>
-              <SettingsRegion world={world} />
-            </View>
-          );
-        },
-      }),
-    );
-    universe.panels.addPanel(
-      new ReactPanel({
-        _id: "hotkeys",
-        render: ({ world }) => (
-          <View style={{ position: "absolute", bottom: 0, right: 0 }}>
-            <HotkeysRegion world={world} />
+    universe.panels.addPanel({
+      _id: "settings",
+      render: ({ world }) => {
+        return (
+          <View style={{ position: "absolute", top: 0, right: 0 }}>
+            <SettingsRegion world={world} />
           </View>
-        ),
-      }),
-    );
+        );
+      },
+    });
+    universe.panels.addPanel({
+      _id: "hotkeys",
+      render: ({ world }) => (
+        <View style={{ position: "absolute", bottom: 0, right: 0 }}>
+          <HotkeysRegion world={world} />
+        </View>
+      ),
+    });
     universe.addWorld(universe.world.clone());
+
+    universe.gestureControls.add({
+      name: "cursor",
+      priority: 100,
+      onHover: ({ touches, world }) => {
+        // set cursor position
+        // const cursor = world.scene.scene.getObjectByName("cursor");
+        cursor && setCursorPosition(touches[0], cursor, world);
+      },
+    });
+
+    universe.gestureControls.add({
+      name: "orbitControl",
+      priority: -10,
+      onDrag: ({ summary, world }) => {
+        const isShiftKeyDown =
+          world.keyMap["ShiftLeft"] || world.keyMap["ShiftRight"];
+        if (world.camera.type === "OrthographicCamera" || isShiftKeyDown) {
+          // pane screen
+          // this.paneCamera(summary);
+          world.camera.paneDelta(
+            summary.dragDeltaInterval.x,
+            summary.dragDeltaInterval.y,
+          );
+        } else {
+          // rotate screen
+          world.camera.rotateDelta(
+            summary.dragDeltaInterval,
+            world.camera.isFirstPersonView ? "lookAt" : "camera",
+          );
+        }
+      },
+    });
+
     console.log("set scene init");
   }, []);
 
