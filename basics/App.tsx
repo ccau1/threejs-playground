@@ -6,6 +6,7 @@ import SettingsRegion from "./ThreeCanvas/components/SettingsRegion";
 import { View } from "react-native";
 import HotkeysRegion from "./ThreeCanvas/components/HotkeysRegion";
 import { orbitControl, cursor } from "./ThreeCanvas/gestureControls";
+import AddElementRegion from "./AddElementRegion";
 
 export default function App() {
   const onUniverseCreate = useCallback((universe: Universe) => {
@@ -60,6 +61,10 @@ export default function App() {
     ground.position.y = -0.01;
     universe.addObject("ground", ground);
 
+    // draw group grid
+    const gridHelper = new THREE.GridHelper(10, 10);
+    universe.addObject("gridHelper", gridHelper);
+
     // draw box
     var geometry = new THREE.BoxGeometry(1, 1, 1);
     var material = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
@@ -68,6 +73,7 @@ export default function App() {
     cube.receiveShadow = true;
     universe.addObject("cube01", cube);
 
+    // add panel settings
     universe.panels.addPanel({
       _id: "settings",
       render: ({ world }) => {
@@ -78,6 +84,8 @@ export default function App() {
         );
       },
     });
+
+    // add panel hotkeys
     universe.panels.addPanel({
       _id: "hotkeys",
       render: ({ world }) => (
@@ -91,8 +99,9 @@ export default function App() {
   }, []);
 
   return (
-    <>
+    <View style={{ flex: 1, flexDirection: "row" }}>
+      <AddElementRegion />
       <UniverseComponent onUniverseCreate={onUniverseCreate} />
-    </>
+    </View>
   );
 }

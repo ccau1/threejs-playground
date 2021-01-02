@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { ReactElementSize } from "../../@hooks/web/useDimensions";
+import { LayoutRectangle } from "react-native";
 import World from "../classes/World";
 
-export default (world: World, dimensions?: ReactElementSize) => {
+export default (world: World, dimensions?: LayoutRectangle) => {
   // update screen size
   useEffect(() => {
     if (world && dimensions && dimensions.width > 0 && dimensions.height > 0) {

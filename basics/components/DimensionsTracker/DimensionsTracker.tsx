@@ -1,24 +1,22 @@
-import React, { useEffect } from "react";
-import { View } from "react-native"
-import { useDimensions } from "../../@hooks/web"
-import { ReactElementSize } from "../../@hooks/web/useDimensions";
+import React from "react";
+import { LayoutRectangle, View } from "react-native";
 
 interface DimensionsTrackerProps {
-  onResize?: (dimensions: ReactElementSize) => void;
+  onResize?: (dimensions: LayoutRectangle) => void;
 }
 
-export default ({onResize}: DimensionsTrackerProps) => {
-  const [dimensionsRef, dimensions] = useDimensions();
-
-  useEffect(() => {
-    if (dimensions) {
-      onResize?.(dimensions);
-    }
-  }, [dimensions]);
-
+export default ({ onResize }: DimensionsTrackerProps) => {
   return (
-    <View ref={dimensionsRef}
-    style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0}}
-    pointerEvents="box-none" />
-  )
-}
+    <View
+      onLayout={(ev) => onResize?.(ev.nativeEvent.layout)}
+      style={{
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+      }}
+      pointerEvents="box-none"
+    />
+  );
+};

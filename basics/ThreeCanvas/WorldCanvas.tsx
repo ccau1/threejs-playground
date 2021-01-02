@@ -2,8 +2,7 @@ import React, { useRef, useState } from "react";
 import { GLView } from "expo-gl";
 import World from "./classes/World";
 import DimensionsTracker from "../components/DimensionsTracker";
-import { ReactElementSize } from "../@hooks/web/useDimensions";
-import { View } from "react-native";
+import { LayoutRectangle, View } from "react-native";
 import useGestures from "./canvasHooks/useGestures";
 import useThreeStats from "./canvasHooks/useThreeStats";
 import useResize from "./canvasHooks/useResize";
@@ -18,7 +17,7 @@ const WorldCanvas = ({ world: propWorld }: WorldCanvasProps) => {
   // instantiate states
   const containerRef = useRef<View>(null);
   const [world] = useState<World>(propWorld || new World());
-  const [dimensions, setDimensions] = useState<ReactElementSize>();
+  const [dimensions, setDimensions] = useState<LayoutRectangle>();
 
   // connect dom gestures to the world
   useGestures(world);

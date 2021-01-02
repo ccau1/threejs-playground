@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { View } from "react-native";
 import useKeyMaps from "./canvasHooks/useKeyMaps";
 import Panel from "./classes/baseClasses/Panel";
 import Universe from "./classes/Universe";
@@ -30,7 +31,7 @@ export default ({
   if (!instantiated) return null;
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       {Object.values(universe.worlds).map((world: World) => (
         <WorldCanvas
           key={world._id}
@@ -44,6 +45,6 @@ export default ({
           )}
         />
       ))}
-    </>
+    </View>
   );
 };
