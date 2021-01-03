@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import World from "./World";
 import PhysicsWorld from "./PhysicsWorld";
+import Actor from "./Actor";
 
 export default class Scene {
   protected _scene: THREE.Scene = new THREE.Scene();
@@ -38,7 +39,7 @@ export default class Scene {
    * get object by id
    */
   getObject(id: string) {
-    return this.meshPool[id]?.object3D;
+    return this.meshPool[id]?.actor;
   }
 
   /**
@@ -49,9 +50,13 @@ export default class Scene {
    */
   addObject(
     id: string,
-    object3D: THREE.Object3D,
+    object3D: THREE.Object3D | Actor,
     options?: { entangled?: boolean },
   ) {
+    if (object3D instanceof THREE.Object3D) {
+      object3D = new Actor(id, object3D, options);
+    }
+
     // FIXME: if no check, could add scene object again without
     // removing previous one. Also can become redundant in constantly
     // replacing. Only removing check because of cloning, but should
@@ -63,15 +68,15 @@ export default class Scene {
       ...options,
     };
 
-    object3D.name = id;
     this.meshPool[id] = {
       id,
-      object3D,
+      actor: object3D as Actor,
       // if entangled, changes to this item will reverberate
       // through the universe
       entangled: opts.entangled,
     };
-    this.scene.add(object3D);
+    this.scene.add(this.meshPool[id].actor.object);
+    return object3D as Actor;
   }
 
   /**
@@ -90,7 +95,7 @@ export default class Scene {
     if (!opts?.skipEntangled && this.meshPool[id].entangled) {
       this.world.universe?.removeObject(id);
     } else {
-      this.scene.remove(this.meshPool[id].object3D);
+      this.scene.remove(this.meshPool[id].actor.object);
       delete this.meshPool[id];
     }
   }

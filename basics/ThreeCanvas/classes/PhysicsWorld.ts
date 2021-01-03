@@ -33,7 +33,7 @@ export default class PhysicsWorld {
 
     // Update rigid bodies
     for (const [_id, meshItem] of Object.entries(this.scene.meshPool)) {
-      let objThree = meshItem.object3D;
+      let objThree = meshItem.actor.object;
       if (!objThree.userData.physicsBody) continue;
       let objAmmo = objThree.userData.physicsBody;
       let ms = objAmmo.getMotionState();

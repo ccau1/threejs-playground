@@ -35,7 +35,7 @@ interface MeshPool {
 
 interface MeshPoolItem {
   id: string;
-  object3D: THREE.Object3D;
+  actor: Actor;
   entangled: boolean;
 }
 

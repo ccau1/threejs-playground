@@ -5,8 +5,16 @@ import * as THREE from "three";
 import SettingsRegion from "./ThreeCanvas/components/SettingsRegion";
 import { View } from "react-native";
 import HotkeysRegion from "./ThreeCanvas/components/HotkeysRegion";
-import { orbitControl, cursor } from "./ThreeCanvas/gestureControls";
+import {
+  orbitControl,
+  cursor,
+  actorControl,
+} from "./ThreeCanvas/gestureControls";
 import AddElementRegion from "./AddElementRegion";
+import Actor from "./ThreeCanvas/classes/Actor";
+import { TouchSummary } from "./ThreeCanvas/contexts/TouchTrackerContext";
+import { screenDeltaToRealWorld } from "./ThreeCanvas/threeUtils";
+import World from "./ThreeCanvas/classes/World";
 
 export default function App() {
   const onUniverseCreate = useCallback((universe: Universe) => {
@@ -16,6 +24,8 @@ export default function App() {
     universe.gestureControls.add(cursor);
     // gesture control for panning/rotating camera
     universe.gestureControls.add(orbitControl);
+    // gesture control for connecting gestures to actors
+    universe.gestureControls.add(actorControl);
 
     universe.addWorld(universe.world.clone());
 
@@ -48,10 +58,10 @@ export default function App() {
       new THREE.Vector3(5, 0, 5),
       new THREE.Vector3(-5, 0, 5),
     ];
-    const shape = new THREE.Shape(
+    const groundShape = new THREE.Shape(
       groundPoints.map((p) => new THREE.Vector2(p.x, p.z)),
     );
-    const groundGeometry = new THREE.ShapeBufferGeometry(shape);
+    const groundGeometry = new THREE.ShapeBufferGeometry(groundShape);
     const groundMaterial = new THREE.MeshPhongMaterial({
       color: "#fff",
       side: THREE.DoubleSide,
@@ -71,7 +81,33 @@ export default function App() {
     var cube = new THREE.Mesh(geometry, material);
     cube.position.set(0, 0.5, 0);
     cube.receiveShadow = true;
-    universe.addObject("cube01", cube);
+    const cubeActor = new Actor("cube01", cube);
+    cubeActor.onHoverStart = function (event) {
+      (this.object.material as THREE.MeshPhongMaterial).color.r = 0.5;
+    };
+    cubeActor.onHoverEnd = function (event) {
+      (this.object.material as THREE.MeshPhongMaterial).color.r = 0;
+    };
+    cubeActor.onDragStart = function (event) {
+      // so we ensure only moving one element at a time
+      event.stopPropagation();
+    };
+    cubeActor.onDrag = function (event) {
+      event.stopPropagation();
+      // set drag speed based on camera's zoom and a constant speed
+      const DRAG_SPEED = (event.world as World).camera.zoom * 0.02;
+      // get delta of real world based on screen drag delta
+      const delta = screenDeltaToRealWorld(
+        (event.summary as TouchSummary).dragDeltaInterval,
+        (event.world as World).camera.camera,
+        DRAG_SPEED,
+      );
+      // update object's position
+      this.object.position.x += delta.x;
+      // this.object.position.y += delta.y;
+      this.object.position.z += delta.z;
+    };
+    universe.addObject("cube01", cubeActor);
 
     // add panel settings
     universe.panels.addPanel({

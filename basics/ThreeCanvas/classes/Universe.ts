@@ -1,3 +1,4 @@
+import Actor from "./Actor";
 import GestureControls from "./GestureControls";
 import Panels from "./Panels";
 import Scene from "./Scene";
@@ -85,20 +86,20 @@ export default class Universe {
    */
   addObject(
     id: string,
-    object: THREE.Object3D,
+    object: THREE.Object3D | Actor,
     options?: { targetWorlds?: string[]; entangled?: boolean },
   ) {
     const { targetWorlds, ...addObjectOptions } = options || {};
     // only select worlds specified in targetWorlds or all if none specified
-    const targetedWorlds = targetWorlds?.length
+    const targetedWorlds: World[] = targetWorlds?.length
       ? Object.keys(this.worlds)
           .filter((w) => targetWorlds?.includes(w))
           .map((w) => this.worlds[w])
       : Object.values(this.worlds);
 
     // add to selected worlds
-    Object.values(targetedWorlds).forEach((w) => {
-      w.scene.addObject(id, object, addObjectOptions);
+    return targetedWorlds.map((w) => {
+      return (w.scene as Scene).addObject(id, object, addObjectOptions);
     });
   }
 
