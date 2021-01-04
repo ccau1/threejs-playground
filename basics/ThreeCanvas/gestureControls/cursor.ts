@@ -6,7 +6,7 @@ export default {
   priority: 100,
   init: ({ universe }) => {
     const cursorGeometry = new THREE.ConeGeometry(0.2, 1, 3);
-    const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const cursorMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const cursor = new THREE.Mesh(cursorGeometry, cursorMaterial);
     universe.addObject("cursor", cursor);
   },

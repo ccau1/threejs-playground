@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { raycastIntersection } from "../threeUtils";
 
 let dragItems: THREE.Intersection[] = [];
+let hoveringItems: THREE.Intersection[] = [];
 
 export default {
   name: "actorControl",
@@ -14,25 +15,52 @@ export default {
       world.camera.camera,
       world.scene.scene.children,
     );
-
     const intersectedIds = intersections.map((i) => i.object.id);
 
-    (world.scene.scene.children as THREE.Object3D[]).forEach((obj) => {
-      if (intersectedIds.includes(obj.id)) {
-        // is hovering, set it
-        obj.userData.hovering = true;
-        // send event for hoverStart
-        obj.dispatchEvent({ type: "onHoverStart", payload: props });
-      } else if (obj.userData.hovering) {
-        // was hovering, not anymore, remove it
-        delete obj.userData.hovering;
-        // send event for hoverEnd
-        obj.dispatchEvent({ type: "onHoverEnd", payload: props });
+    const hoverIntersections = [];
+    const hoverStartIntersections = [];
+
+    for (const intersection of intersections) {
+      if (hoveringItems.some((hi) => hi.object.id === intersection.object.id)) {
+        // already hovering, continue hovering
+        hoverIntersections.push(intersection);
+      } else {
+        // new hovering, add to hover start
+        hoverStartIntersections.push(intersection);
       }
-      if (obj.userData.hovering) {
-        obj.dispatchEvent({ type: "onHovering", payload: props });
-      }
+    }
+    // get all items to end hovering
+    const hoverEndIntersections = hoveringItems.filter((hi) =>
+      intersectedIds.every((h) => h !== hi.object.id),
+    );
+
+    // handle all hover end events
+    hoverEndIntersections.forEach((intersection) => {
+      // was hovering, not anymore, remove it
+      delete intersection.object.userData.hovering;
+      // send event for hoverEnd
+      intersection.object.dispatchEvent({ type: "onHoverEnd", payload: props });
     });
+
+    // handle all hover start events
+    hoverStartIntersections.forEach((intersection) => {
+      // was hovering, not anymore, remove it
+      intersection.object.userData.hovering = true;
+      // send event for hoverEnd
+      intersection.object.dispatchEvent({
+        type: "onHoverStart",
+        payload: props,
+      });
+    });
+
+    // handle all hover start events
+    hoverIntersections.forEach((intersection) => {
+      // send event for hoverEnd
+      intersection.object.dispatchEvent({ type: "onHovering", payload: props });
+    });
+
+    // store current intersection for next time
+    hoveringItems = intersections;
   },
   onDragStart: (props) => {
     const { summary, world } = props;
@@ -48,7 +76,7 @@ export default {
     for (const [index, intersection] of dragItems.entries()) {
       // send event for hoverStart
       intersection.object.dispatchEvent({
-        type: "onDragStart",
+        type: "onTouchDragStart",
         payload: {
           ...props,
           stopPropagation: () => {
@@ -69,7 +97,7 @@ export default {
     for (const [index, intersection] of dragItems.entries()) {
       // send event for drag
       intersection.object.dispatchEvent({
-        type: "onDrag",
+        type: "onTouchDrag",
         payload: {
           ...props,
           stopPropagation: () => {
@@ -89,7 +117,7 @@ export default {
     for (const [index, intersection] of dragItems.entries()) {
       // send event for dragEnd
       intersection.object.dispatchEvent({
-        type: "onDragEnd",
+        type: "onTouchDragEnd",
         payload: {
           ...props,
           stopPropagation: () => {

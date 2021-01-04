@@ -19,7 +19,20 @@ export default class Camera {
 
   constructor(world: World, camera?: THREE.Camera) {
     this.world = world;
-    this._camera = camera || this.createCamera();
+    if (camera) {
+      this._camera = this.camera = camera;
+    } else {
+      this._camera = this.createCamera();
+    }
+  }
+
+  attachEvents(camera: THREE.Camera) {
+    camera.addEventListener(
+      "onTouchDrag",
+      ({ payload: ev }: THREE.Event & { payload: GestureControlEvent }) => {
+        this.onTouchDrag(ev);
+      },
+    );
   }
 
   get camera() {
@@ -28,6 +41,7 @@ export default class Camera {
 
   set camera(camera: THREE.Camera) {
     this._camera = camera;
+    this.attachEvents(camera);
   }
 
   get speed() {
@@ -134,6 +148,21 @@ export default class Camera {
     }
 
     this._camera = this.createCamera();
+  }
+
+  onTouchDrag({ summary }: GestureControlEvent) {
+    const isShiftKeyDown =
+      this.world.keyMap["ShiftLeft"] || this.world.keyMap["ShiftRight"];
+    if (this.type === "OrthographicCamera" || isShiftKeyDown) {
+      // pane screen
+      this.paneDelta(summary.dragDeltaInterval.x, summary.dragDeltaInterval.y);
+    } else {
+      // rotate screen
+      this.rotateDelta(
+        summary.dragDeltaInterval,
+        this.isFirstPersonView ? "lookAt" : "camera",
+      );
+    }
   }
 
   /**
@@ -309,6 +338,8 @@ export default class Camera {
     }
 
     this.syncPosition(camera);
+
+    this.attachEvents(camera);
 
     return camera;
   }

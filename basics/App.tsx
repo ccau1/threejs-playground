@@ -88,11 +88,11 @@ export default function App() {
     cubeActor.onHoverEnd = function (event) {
       (this.object.material as THREE.MeshPhongMaterial).color.r = 0;
     };
-    cubeActor.onDragStart = function (event) {
+    cubeActor.onTouchDragStart = function (event) {
       // so we ensure only moving one element at a time
       event.stopPropagation();
     };
-    cubeActor.onDrag = function (event) {
+    cubeActor.onTouchDrag = function (event) {
       event.stopPropagation();
       // set drag speed based on camera's zoom and a constant speed
       const DRAG_SPEED = (event.world as World).camera.zoom * 0.02;
