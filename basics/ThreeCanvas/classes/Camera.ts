@@ -33,6 +33,12 @@ export default class Camera {
         this.onTouchDrag(ev);
       },
     );
+    camera.addEventListener(
+      "onMouseScroll",
+      ({ payload: ev }: THREE.Event & { payload: GestureControlEvent }) => {
+        this.onMouseScroll(ev);
+      },
+    );
   }
 
   get camera() {
@@ -165,6 +171,10 @@ export default class Camera {
     }
   }
 
+  onMouseScroll({ summary }: GestureControlEvent) {
+    this.zoomDelta(summary.scaleDeltaInterval);
+  }
+
   /**
    *
    * @param pos new camera position, looking at position and/or zoom
@@ -220,6 +230,29 @@ export default class Camera {
       lookAt: newLookAt,
       zoom: newZoom,
     });
+  }
+
+  zoomDelta(zoomDelta: number) {
+    // scroll can be too fast, so damper it to a medium speed
+    const damper = 0.01 * this.speed;
+    // create a new camera and translate its Z to zoom
+    const newCamera = this.camera.clone();
+    newCamera.translateZ(zoomDelta * damper);
+    // if new position height is too close to the floor
+    if (newCamera.position.y < this._lookAt.y && newCamera.position.y < 50) {
+      // don't zoom, just return
+      return;
+    }
+
+    // set new camera position after zoom
+    this.camera.position.x = newCamera.position.x;
+    this.camera.position.y = newCamera.position.y;
+    this.camera.position.z = newCamera.position.z;
+    this._position = {
+      x: this.camera.position.x,
+      y: this.camera.position.y,
+      z: this.camera.position.z,
+    };
   }
 
   /**

@@ -16,6 +16,7 @@ export default (world: World) => {
       addTouchListener("double", world.gestures.onGestureDoubleTap);
       addTouchListener("end", world.gestures.onGestureEnd);
       addTouchListener("hover", world.gestures.onGestureHover);
+      addTouchListener("scroll", world.gestures.onGestureScroll);
     }
 
     return () => {
@@ -26,6 +27,7 @@ export default (world: World) => {
         removeTouchListener("double", world.gestures.onGestureDoubleTap);
         removeTouchListener("end", world.gestures.onGestureEnd);
         removeTouchListener("hover", world.gestures.onGestureHover);
+        removeTouchListener("scroll", world.gestures.onGestureScroll);
       }
     };
   }, [world]);

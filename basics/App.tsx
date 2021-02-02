@@ -15,6 +15,7 @@ import Actor from "./ThreeCanvas/classes/Actor";
 import { TouchSummary } from "./ThreeCanvas/contexts/TouchTrackerContext";
 import { screenDeltaToRealWorld } from "./ThreeCanvas/threeUtils";
 import World from "./ThreeCanvas/classes/World";
+import ReactPanel from "./ThreeCanvas/classes/ReactPanel";
 
 export default function App() {
   const onUniverseCreate = useCallback((universe: Universe) => {
@@ -51,28 +52,8 @@ export default function App() {
     const axesHelper = new THREE.AxesHelper();
     universe.addObject("axesHelper", axesHelper);
 
-    // draw ground
-    const groundPoints = [
-      new THREE.Vector3(-5, 0, -5),
-      new THREE.Vector3(5, 0, -5),
-      new THREE.Vector3(5, 0, 5),
-      new THREE.Vector3(-5, 0, 5),
-    ];
-    const groundShape = new THREE.Shape(
-      groundPoints.map((p) => new THREE.Vector2(p.x, p.z)),
-    );
-    const groundGeometry = new THREE.ShapeBufferGeometry(groundShape);
-    const groundMaterial = new THREE.MeshPhongMaterial({
-      color: "#fff",
-      side: THREE.DoubleSide,
-    });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotateX(-Math.PI * 0.5);
-    ground.position.y = -0.01;
-    universe.addObject("ground", ground);
-
     // draw group grid
-    const gridHelper = new THREE.GridHelper(10, 10);
+    const gridHelper = new THREE.GridHelper(50, 50);
     universe.addObject("gridHelper", gridHelper);
 
     // draw box
@@ -110,7 +91,7 @@ export default function App() {
     universe.addObject("cube01", cubeActor);
 
     // add panel settings
-    universe.panels.addPanel({
+    const settingsPanel = new ReactPanel({
       _id: "settings",
       render: ({ world }) => {
         return (
@@ -120,6 +101,7 @@ export default function App() {
         );
       },
     });
+    universe.panels.addPanel(settingsPanel);
 
     // add panel hotkeys
     universe.panels.addPanel({

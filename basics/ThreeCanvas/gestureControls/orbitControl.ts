@@ -9,4 +9,10 @@ export default {
       payload: ev,
     });
   },
+  onMouseScroll: (ev) => {
+    (ev.world.camera as Camera).camera.dispatchEvent({
+      type: "onMouseScroll",
+      payload: ev,
+    });
+  },
 } as GestureControl;

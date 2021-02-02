@@ -57,6 +57,17 @@ export default class GesturesBase {
 
   /**
    *
+   * @param touches state of each finger's touch
+   * @param summary a summary state of all fingers touched
+   *
+   * on mouse scroll
+   */
+  onGestureScroll(touches: TouchTrackerEvent[], summary: TouchSummary) {
+    console.info("gesture scroll", touches, summary);
+  }
+
+  /**
+   *
    * @param summary a summary state of all fingers touched
    *
    * panes the world's camera based on summary's drag delta interval

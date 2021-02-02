@@ -4,7 +4,7 @@ import World from "./World";
 interface ReactPanelConstructor {
   _id: string;
   visible?: boolean;
-  render: React.FunctionComponent<{ world: World }>;
+  render: React.FunctionComponent<PanelRenderProps>;
   worldTargets?: WorldTargets;
 }
 

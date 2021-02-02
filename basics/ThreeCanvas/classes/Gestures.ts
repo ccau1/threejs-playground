@@ -66,6 +66,17 @@ export default class Gestures extends GesturesBase {
    * @param touches state of each finger's touch
    * @param summary a summary state of all fingers touched
    *
+   * on mouse scroll
+   */
+  onGestureScroll = (touches: TouchTrackerEvent[], summary: TouchSummary) => {
+    this.triggerGestureControls("onMouseScroll", { touches, summary });
+  };
+
+  /**
+   *
+   * @param touches state of each finger's touch
+   * @param summary a summary state of all fingers touched
+   *
    * on touch gesture end
    */
   onGestureEnd = (touches: TouchTrackerEvent[], summary: TouchSummary) => {

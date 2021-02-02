@@ -1,4 +1,10 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import {
   View,
   PanResponder,
@@ -30,6 +36,8 @@ export interface TouchTrackerEvent {
   deltaCenterAngle: number;
   deltaCenterAngleInterval: number;
   originalCenterDistance: number; // distance between center point and touch
+  centerDistance: number;
+  centerAngle: number;
   deltaCenterDistance: number;
   deltaCenterDistanceInterval: number;
   [key: string]: number | string | boolean | undefined;
@@ -48,19 +56,22 @@ export interface TouchSummary {
 export type TouchTrackerListener = (
   touches: TouchTrackerEvent[],
   summary: TouchSummary,
+  evt?: GestureResponderEvent,
 ) => void;
+
+export type TouchType =
+  | "start"
+  | "move"
+  | "end"
+  | "double"
+  | "hover"
+  | "scroll";
 
 export interface TouchTrackerContextProps {
   getTouches: () => TouchTrackerEvent[];
   getTouchSummary: () => TouchSummary;
-  addTouchListener: (
-    type: "start" | "move" | "end" | "double" | "hover",
-    fn: TouchTrackerListener,
-  ) => void;
-  removeTouchListener: (
-    type: "start" | "move" | "end" | "double" | "hover",
-    fn: TouchTrackerListener,
-  ) => void;
+  addTouchListener: (type: TouchType, fn: TouchTrackerListener) => void;
+  removeTouchListener: (type: TouchType, fn: TouchTrackerListener) => void;
 }
 
 export interface TouchTrackerProviderProps {
@@ -80,16 +91,47 @@ export const TouchTrackerContext = React.createContext<TouchTrackerContextProps>
       fingersCenter: { x: 0, y: 0 },
       isOutOfBound: false,
     }),
-    addTouchListener: (
-      type: "start" | "move" | "end" | "double" | "hover",
-      fn: TouchTrackerListener,
-    ) => null,
-    removeTouchListener: (
-      type: "start" | "move" | "end" | "double" | "hover",
-      fn: TouchTrackerListener,
-    ) => null,
+    addTouchListener: (type: TouchType, fn: TouchTrackerListener) => null,
+    removeTouchListener: (type: TouchType, fn: TouchTrackerListener) => null,
   },
 );
+
+export const getTwoPointDistance = (
+  x1: number,
+  x2: number,
+  y1: number,
+  y2: number,
+) => {
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+};
+
+export const getScale = (
+  originDistance: number,
+  currDistance: number,
+): number => {
+  let diff = currDistance - originDistance;
+  return diff / originDistance / 100;
+};
+
+const DEFAULT_TOUCH_SUMMARY = {
+  scaleDelta: 0,
+  rotateDelta: 0,
+  dragDelta: {
+    x: 0,
+    y: 0,
+  },
+  scaleDeltaInterval: 0,
+  rotateDeltaInterval: 0,
+  dragDeltaInterval: {
+    x: 0,
+    y: 0,
+  },
+  fingersCenter: {
+    x: 0,
+    y: 0,
+  },
+  isOutOfBound: false,
+};
 
 const Provider = ({ children }: TouchTrackerProviderProps) => {
   //For future state use
@@ -99,27 +141,9 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
 
   const touchesRef = useRef<TouchTrackerEvent[]>([]);
 
-  const topLeftDivRef = useRef<HTMLDivElement | any>(null);
+  let originTouches: any[];
 
-  const DEFAULT_TOUCH_SUMMARY = {
-    scaleDelta: 0,
-    rotateDelta: 0,
-    dragDelta: {
-      x: 0,
-      y: 0,
-    },
-    scaleDeltaInterval: 0,
-    rotateDeltaInterval: 0,
-    dragDeltaInterval: {
-      x: 0,
-      y: 0,
-    },
-    fingersCenter: {
-      x: 0,
-      y: 0,
-    },
-    isOutOfBound: false,
-  };
+  const topLeftDivRef = useRef<HTMLDivElement | any>(null);
 
   const touchSummaryRef = useRef<TouchSummary>(DEFAULT_TOUCH_SUMMARY);
 
@@ -131,12 +155,14 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
     end: TouchTrackerListener[];
     double: TouchTrackerListener[];
     hover: TouchTrackerListener[];
+    scroll: TouchTrackerListener[];
   }>({
     start: [],
     move: [],
     end: [],
     double: [],
     hover: [],
+    scroll: [],
   });
   const value = useMemo<TouchTrackerContextProps>(() => {
     const innerTouchFns = touchFns;
@@ -167,17 +193,14 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
   const [ref, dimensions] = useDimensions();
 
   //get position relative to parent
-  const isOutOfBound = (ev: {
-    locationX: number;
-    locationY: number;
-  }): boolean => {
+  const isOutOfBound = (ev: { pageX: number; pageY: number }): boolean => {
     return (
       ev &&
       dimensions !== null &&
-      (ev.locationX < dimensions.left ||
-        ev.locationY < dimensions.top ||
-        ev.locationX > dimensions.left + dimensions.width ||
-        ev.locationY > dimensions.top + dimensions.height)
+      (ev.pageX < dimensions.left ||
+        ev.pageY < dimensions.top ||
+        ev.pageX > dimensions.left + dimensions.width ||
+        ev.pageY > dimensions.top + dimensions.height)
     );
   };
 
@@ -195,14 +218,18 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
 
   // get the delta of the distance btw coordinate and center
   // if no previous coordinate, current delta is the current distance to center
-  const getDeltaCenterDistance = (originalCenterDistance: number): number => {
+  const getDeltaCenterDistance = (
+    originalCenterDistance: number,
+    newCenterDistance: number,
+  ): number => {
     return touchesRef.current.length
       ? originalCenterDistance - touchesRef.current[0].originalCenterDistance
       : 0;
   };
 
+  // test
   // get the delta of x and y
-  const getDelta = (
+  const getDeltaXY = (
     currentXY: Position2D,
     originalXY: Position2D,
   ): Position2D => {
@@ -218,8 +245,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
   ): Position2D => {
     if (!touchesRef.current.length) {
       return {
-        x: getDelta(currentXY, originalXY).x,
-        y: getDelta(currentXY, originalXY).y,
+        x: getDeltaXY(currentXY, originalXY).x,
+        y: getDeltaXY(currentXY, originalXY).y,
       };
     }
 
@@ -321,7 +348,7 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
     touchIndex: number,
     newTouches: TouchTrackerEvent[],
   ): number => {
-    accMove += touch.originalCenterAngle;
+    accMove += touch.deltaCenterAngle;
 
     if (touchIndex === newTouches.length - 1) {
       accMove = accMove / newTouches.length;
@@ -331,10 +358,7 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
   };
 
   //rotation angle
-  const getOriginalCenterAngle = (
-    current: Position2D,
-    center: Position2D,
-  ): number => {
+  const getAngle = (current: Position2D, center: Position2D): number => {
     const angle =
       (Math.atan2(current.y - center.y, current.x - center.x) * 180) / Math.PI;
     return angle > 0 ? angle : 360 + angle;
@@ -342,10 +366,11 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
 
   // get the delta of the angle btw coordinate and center
   // if no previous coordinate, current delta is the current angle to center
-  const getDeltaCenterAngle = (originalCenterAngle: number): number => {
-    return touchesRef.current.length
-      ? originalCenterAngle - touchesRef.current[0].originalCenterAngle
-      : 0;
+  const getDeltaCenterAngle = (
+    originalCenterAngle: number,
+    newCenterAngle: number,
+  ): number => {
+    return originalCenterAngle - newCenterAngle;
   };
 
   const getDeltaCenterAngleInterval = (deltaCenterAngle: number): number => {
@@ -355,28 +380,36 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
       : 0;
   };
 
-  const getFingersCenter = (
-    evt: GestureResponderEvent,
-    gestureState: PanResponderGestureState,
-  ) => {
-    evt.nativeEvent.locationX;
-    const { numberActiveTouches } = gestureState;
+  const getCenterPoint = (arr: Position2D[]) => {
+    var x = arr.map((xy) => xy.x);
+    var y = arr.map((xy) => xy.y);
+    var cx = (Math.min(...x) + Math.max(...x)) / 2;
+    var cy = (Math.min(...y) + Math.max(...y)) / 2;
+    return { x: cx, y: cy };
+  };
 
-    //Create an array with length equal to number of touches each time
-    return Array.from({ length: numberActiveTouches }).reduce<Position2D>(
-      (pos2dAcc: Position2D, v, vIndex: number) => {
-        pos2dAcc.x += evt.nativeEvent.locationX;
-        pos2dAcc.y += evt.nativeEvent.locationY;
+  const getFingersCenter = (evt: GestureResponderEvent) => {
+    evt.nativeEvent.pageX;
+    const { touches } = evt.nativeEvent;
+    // const activeTouches = touches.length;
 
-        if (vIndex >= numberActiveTouches - 1) {
-          // last item, handle avg
-          pos2dAcc.x /= numberActiveTouches;
-          pos2dAcc.y /= numberActiveTouches;
-        }
-        return pos2dAcc;
-      },
-      { x: 0, y: 0 },
-    );
+    return getCenterPoint(touches.map((t) => ({ x: t.pageX, y: t.pageY })));
+
+    // //Create an array with length equal to number of touches each time
+    // return Array.from({ length: activeTouches }).reduce<Position2D>(
+    //   (pos2dAcc: Position2D, v, vIndex: number) => {
+    //     pos2dAcc.x += evt.nativeEvent.pageX;
+    //     pos2dAcc.y += evt.nativeEvent.pageY;
+
+    //     if (vIndex >= activeTouches - 1) {
+    //       // last item, handle avg
+    //       pos2dAcc.x /= activeTouches;
+    //       pos2dAcc.y /= activeTouches;
+    //     }
+    //     return pos2dAcc;
+    //   },
+    //   { x: 0, y: 0 },
+    // );
   };
   const originalXY = (currentXY: Position2D): Position2D => {
     return touchesRef.current.length
@@ -389,77 +422,82 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           y: currentXY.y,
         };
   };
+
   const generateTouches = (
     evt: GestureResponderEvent,
     gestureState: PanResponderGestureState,
   ): TouchTrackerEvent[] => {
     const newTouches: TouchTrackerEvent[] = [];
-    const {
-      moveX,
-      moveY,
-      x0,
-      y0,
-      dx,
-      dy,
-      vx,
-      vy,
-      numberActiveTouches,
-    } = gestureState;
+    const fingersCenter = getFingersCenter(evt);
 
-    for (let i = 0; i < numberActiveTouches; i++) {
+    for (let i = 0; i < evt.nativeEvent.touches.length; i++) {
+      const thisTouch = evt.nativeEvent.touches[i];
+      const prevTouch: TouchTrackerEvent | undefined = touchesRef.current[i];
+      if (!thisTouch) break;
+
       // if start, x = originalX and y = originalY, if moved, x = moveX and y = moveY
-      const currentXY: Position2D = { x: moveX || x0, y: moveY || y0 };
-      const lastInterval: Position2D = isTouched()
-        ? {
-            x: touchesRef.current[touchesRef.current.length - 1].deltaXInterval,
-            y: touchesRef.current[touchesRef.current.length - 1].deltaYInterval,
-          }
-        : { x: vx, y: vy };
-      // const thisTouch = touchEvent.touches[i] as TouchEvent;
-      // const { force }: TouchEvent = thisTouch;
-      const originalCenterAngle: number = getOriginalCenterAngle(currentXY, {
-        x: x0,
-        y: y0,
-      });
-      const deltaCenterAngle: number = getDeltaCenterAngle(originalCenterAngle);
-      const deltaCenterAngleInterval: number = getDeltaCenterAngleInterval(
-        deltaCenterAngle,
-      );
+      const currentXY: Position2D = {
+        x: thisTouch.pageX,
+        y: thisTouch.pageY,
+      };
+      const lastIntervalXY: Position2D = {
+        x: prevTouch?.x || currentXY.x,
+        y: prevTouch?.y || currentXY.y,
+      };
+      const currentCenterAngle: number = getAngle(currentXY, fingersCenter);
+
+      const originalCenterAngle: number =
+        prevTouch?.originalCenterAngle || currentCenterAngle;
+      const deltaCenterAngle: number = currentCenterAngle - originalCenterAngle;
+
+      const deltaCenterAngleInterval: number =
+        currentCenterAngle - (prevTouch?.centerAngle || currentCenterAngle);
       //distance between original point and the touch(es)
-      const originalCenterDistance: number = getCoordinateDistance(
-        { x: evt.nativeEvent.locationX, y: evt.nativeEvent.locationY },
-        getFingersCenter(evt, gestureState),
+
+      const centerDistance: number = getCoordinateDistance(
+        { x: thisTouch.pageX, y: thisTouch.pageY },
+        fingersCenter,
       );
-      const deltaCenterDistance: number = getDeltaCenterDistance(
-        originalCenterDistance,
+
+      const originalCenterDistance =
+        prevTouch?.originalCenterDistance || centerDistance;
+
+      const deltaCenterDistance: number =
+        centerDistance - originalCenterDistance;
+
+      const deltaCenterDistanceInterval: number =
+        centerDistance - (prevTouch?.centerDistance || centerDistance);
+
+      const deltaXYInterval: Position2D = getDeltaXY(
+        currentXY,
+        prevTouch || currentXY,
       );
-      const deltaCenterDistanceInterval: number = getDeltaCenterDistanceInterval(
-        originalCenterDistance,
-      );
-      const originalXAndY: Position2D = originalXY(currentXY);
-      const deltaXInterval: number = getDeltaInterval(currentXY, originalXAndY)
-        .x;
-      const deltaYInterval: number = getDeltaInterval(currentXY, originalXAndY)
-        .y;
 
       newTouches.push({
         x: currentXY.x,
         y: currentXY.y,
-        lastXInterval: lastInterval.x,
-        lastYInterval: lastInterval.y,
+        lastXInterval: lastIntervalXY.x,
+        lastYInterval: lastIntervalXY.y,
         // force: force,
         isTouched: true,
         target: (evt.nativeEvent.target as any).tagName,
-        originalX: x0,
-        originalY: y0,
-        deltaX: dx,
-        deltaY: dy,
-        deltaXInterval: deltaXInterval,
-        deltaYInterval: deltaYInterval,
+
+        // test
+        originalX: prevTouch?.originalX || currentXY.x,
+        originalY: prevTouch?.originalY || currentXY.y,
+
+        // test
+        deltaX: thisTouch.pageX - (prevTouch?.originalX || thisTouch.pageX),
+        deltaY: thisTouch.pageY - (prevTouch?.originalY || thisTouch.pageY),
+
+        deltaXInterval: deltaXYInterval.x,
+        deltaYInterval: deltaXYInterval.y,
         originalCenterAngle: originalCenterAngle,
         deltaCenterAngle: deltaCenterAngle,
         deltaCenterAngleInterval: deltaCenterAngleInterval,
         originalCenterDistance: originalCenterDistance,
+        centerDistance,
+        centerAngle: currentCenterAngle,
         deltaCenterDistance: deltaCenterDistance,
         deltaCenterDistanceInterval: deltaCenterDistanceInterval,
       });
@@ -478,25 +516,13 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
       // when multiple Views return true for *ShouldSetResponder handlers
 
       // Does this view want to become responder on the start of a touch?
-      onStartShouldSetPanResponder: (
-        evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => true,
-      onStartShouldSetPanResponderCapture: (
-        evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => true,
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
 
       // Called for every touch move on the View when it is not the responder:
       // Does this view want to "claim" touch responsiveness?
-      onMoveShouldSetPanResponder: (
-        evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => true,
-      onMoveShouldSetPanResponderCapture: (
-        evt,
-        gestureState: PanResponderGestureState,
-      ) => true,
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
 
       // If the View returns true and attempts to become the responder:
       onPanResponderGrant: (
@@ -506,19 +532,17 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
         // The View is now responding for touch events
         // gestureState.d{x,y} will be set to zero
 
-        const { dx, dy, vx, vy }: PanResponderGestureState = gestureState;
-
-        const fingersCenter: Position2D = getFingersCenter(evt, gestureState);
+        const fingersCenter: Position2D = getFingersCenter(evt);
 
         const newTouchSummary: TouchSummary = {
           scaleDelta: 0,
           rotateDelta: 0,
           dragDelta: {
-            x: dx,
-            y: dy,
+            x: 0,
+            y: 0,
           },
-          scaleDeltaInterval: vx,
-          rotateDeltaInterval: vy,
+          scaleDeltaInterval: 0,
+          rotateDeltaInterval: 0,
           dragDeltaInterval: {
             x: 0,
             y: 0,
@@ -528,8 +552,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
             y: fingersCenter.y,
           },
           isOutOfBound: isOutOfBound({
-            locationX: fingersCenter.x,
-            locationY: fingersCenter.y,
+            pageX: fingersCenter.x,
+            pageY: fingersCenter.y,
           }),
         };
         touchSummaryRef.current = newTouchSummary;
@@ -546,15 +570,15 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
         //and this tap is greater than specified delay for double tap,
         //count it as a normal tap and end it
         //setTimeout to make sure enough delay between each normal tap end
-        touchFns.start.forEach((fn) => fn(newTouches, newTouchSummary));
+        touchFns.start.forEach((fn) => fn(newTouches, newTouchSummary, evt));
         // }, DOUBLE_PRESS_DELAY);
       },
-      onPanResponderReject: (
-        evt: GestureResponderEvent,
-        gestureStart: PanResponderGestureState,
-      ) => {
-        //Something else is the responder right now and will not release it
-      },
+      // onPanResponderReject: (
+      //   evt: GestureResponderEvent,
+      //   gestureStart: PanResponderGestureState,
+      // ) => {
+      //   //Something else is the responder right now and will not release it
+      // },
 
       //If the view is responding, the following handlers can be called:
       onPanResponderMove: (
@@ -567,7 +591,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
         // The accumulated gesture distance since becoming responder is
         // gestureState: PanResponderGestureState.d{x,y}
 
-        const fingersCenter: Position2D = getFingersCenter(evt, gestureState);
+        const fingersCenter: Position2D = getFingersCenter(evt);
+        const prevTouchSummary = touchSummaryRef.current;
         const newTouches: TouchTrackerEvent[] = generateTouches(
           evt,
           gestureState,
@@ -577,15 +602,24 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
         const touchCount: number = evt.nativeEvent.touches.length;
 
         const scaleDelta: number =
-          touchCount >= 2 //at least 2 fingers touching
-            ? distanceDeltaToScale(
-                newTouches.reduce<number>(scaleDeltaAverage, 0),
-              )
-            : 0;
+          newTouches.reduce<number>((avg, touch, touchIndex) => {
+            avg +=
+              (touch.centerDistance - touch.originalCenterDistance) /
+              (touch.originalCenterDistance || 1);
+            if (touchIndex === newTouches.length - 1) {
+              avg /= newTouches.length;
+            }
+            return avg;
+          }, 0) || 0;
         const rotateDelta: number =
-          touchCount >= 2 //at least 2 fingers touching
-            ? newTouches.reduce<number>(rotateDeltaAverage, 0)
-            : 0;
+          newTouches.reduce<number>((avg, touch, touchIndex) => {
+            avg += touch.deltaCenterAngle;
+            if (touchIndex === newTouches.length - 1) {
+              avg /= newTouches.length;
+            }
+            return avg;
+          }, 0) || 0;
+
         const dragDelta: Position2D =
           touchCount >= 1 //at least 1 finger touching
             ? newTouches.reduce<Position2D>(xyDeltaAverages, { x: 0, y: 0 })
@@ -595,31 +629,27 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           scaleDelta: scaleDelta,
           rotateDelta: rotateDelta,
           dragDelta: dragDelta,
-          scaleDeltaInterval: getScaleDeltaInterval(scaleDelta),
-          rotateDeltaInterval: getRotateDeltaInterval(rotateDelta),
-          dragDeltaInterval: newTouches.reduce<Position2D>(
-            xyDeltaIntervalAverage,
-            {
-              x: 0,
-              y: 0,
-            },
+          scaleDeltaInterval:
+            scaleDelta - (prevTouchSummary?.scaleDelta || scaleDelta),
+          rotateDeltaInterval:
+            rotateDelta - (prevTouchSummary?.rotateDelta || rotateDelta),
+          dragDeltaInterval: getDeltaXY(
+            fingersCenter,
+            prevTouchSummary?.fingersCenter || fingersCenter,
           ),
           fingersCenter: fingersCenter,
           isOutOfBound: isOutOfBound({
-            locationX: fingersCenter.x,
-            locationY: fingersCenter.y,
+            pageX: fingersCenter.x,
+            pageY: fingersCenter.y,
           }),
         };
         touchSummaryRef.current = newTouchSummary;
 
-        touchFns.move.forEach((fn) => fn(newTouches, newTouchSummary));
+        touchFns.move.forEach((fn) => fn(newTouches, newTouchSummary, evt));
       },
       //Something else wants to become responder.
       //Should this view release the responder? Returning true allows release
-      onPanResponderTerminationRequest: (
-        evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => true,
+      onPanResponderTerminationRequest: () => true,
       onPanResponderRelease: (
         evt: GestureResponderEvent,
         gestureState: PanResponderGestureState,
@@ -651,7 +681,7 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           //and this tap is greater than specified delay for double tap,
           //count it as a normal tap and end it
           touchFns.end.forEach((fn) =>
-            fn(touchesRef.current, touchSummaryRef.current),
+            fn(touchesRef.current, touchSummaryRef.current, evt),
           );
           // }, DOUBLE_PRESS_DELAY);
         }
@@ -676,7 +706,7 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           now - lastTapRef.current < DOUBLE_PRESS_DELAY
         ) {
           touchFns.double.forEach((fn) =>
-            fn(touchesRef.current, touchSummaryRef.current),
+            fn(touchesRef.current, touchSummaryRef.current, evt),
           );
           clearTimeout(panStartTimeout.current);
           clearTimeout(panEndTimeout.current);
@@ -685,14 +715,7 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
         touchesRef.current.splice(0);
         touchSummaryRef.current = DEFAULT_TOUCH_SUMMARY;
       },
-      onShouldBlockNativeResponder: (
-        evt: GestureResponderEvent,
-        gestureState: PanResponderGestureState,
-      ) => {
-        // Returns whether this component should block native components from becoming the JS
-        // responder. Returns true by default. Is currently only supported on android.
-        return true;
-      },
+      onShouldBlockNativeResponder: () => true,
     }),
   );
 
@@ -705,8 +728,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
       if (
         dimensions &&
         !isOutOfBound({
-          locationX: ev.x,
-          locationY: ev.y,
+          pageX: ev.x,
+          pageY: ev.y,
         }) &&
         !touchesRef.current[0]?.isTouched
       ) {
@@ -733,6 +756,8 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
           originalCenterDistance: 0,
           deltaCenterDistance: 0,
           deltaCenterDistanceInterval: 0,
+          centerAngle: 0,
+          centerDistance: 0,
         };
         touchesRef.current = [touch];
 
@@ -755,15 +780,76 @@ const Provider = ({ children }: TouchTrackerProviderProps) => {
       mouseActions.current[type](ev);
     if (dimensions && isHtmlPlatform()) {
       window.addEventListener("mousemove", eventListener("onMouseMove"));
-
       return () =>
         window.removeEventListener("mousemove", eventListener("onMouseMove"));
     }
   }, [dimensions]);
 
+  const onWheel = useCallback(
+    (evt) => {
+      const ev = evt.nativeEvent;
+      if (
+        dimensions &&
+        !isOutOfBound({
+          pageX: ev.x,
+          pageY: ev.y,
+        }) &&
+        !touchesRef.current[0]?.isTouched
+      ) {
+        const x = ev.x - dimensions.left;
+        const y = ev.y - dimensions.top;
+
+        const touch: TouchTrackerEvent = {
+          x,
+          y,
+          lastXInterval: touchesRef.current[0]?.x || 0,
+          lastYInterval: touchesRef.current[0]?.y || 0,
+          force: 0,
+          isTouched: false,
+          target: (ev.target as any).tagName,
+          originalX: x,
+          originalY: y,
+          deltaX: 0,
+          deltaY: 0,
+          deltaXInterval: x - (touchesRef.current[0]?.x || 0),
+          deltaYInterval: y - (touchesRef.current[0]?.y || 0),
+          originalCenterAngle: 0,
+          deltaCenterAngle: 0,
+          deltaCenterAngleInterval: 0,
+          originalCenterDistance: 0,
+          deltaCenterDistance:
+            (touchesRef.current?.[0]?.deltaCenterDistance || 0) + ev.wheelDelta,
+          deltaCenterDistanceInterval: ev.wheelDelta,
+          centerAngle: 0,
+          centerDistance: 0,
+        };
+        touchesRef.current = [touch];
+
+        const touchSummary: TouchSummary = {
+          ...DEFAULT_TOUCH_SUMMARY,
+          fingersCenter: {
+            x: touch.x,
+            y: touch.y,
+          },
+          scaleDelta: touch.deltaCenterDistance,
+          scaleDeltaInterval: ev.wheelDelta,
+        };
+        touchSummaryRef.current = touchSummary;
+
+        touchFns.scroll.forEach((fn) => fn([touch], touchSummary));
+      }
+    },
+    [dimensions, touchesRef.current, touchSummaryRef.current],
+  );
+
   return (
     <TouchTrackerContext.Provider value={value}>
-      <View ref={ref} style={{ flex: 1 }} {...panResponder.current.panHandlers}>
+      <View
+        ref={ref}
+        onWheel={onWheel}
+        style={{ flex: 1 }}
+        {...panResponder.current.panHandlers}
+      >
         {children}
       </View>
     </TouchTrackerContext.Provider>

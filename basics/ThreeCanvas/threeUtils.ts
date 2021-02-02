@@ -21,12 +21,13 @@ export const setCursorPosition = (
   mousePosition: { x: number; y: number },
   cursor: THREE.Object3D,
   world: World,
+  children: THREE.Object3D[] = world.scene.scene.children,
 ) => {
   const intersections = raycastIntersection(
     mousePosition,
     world,
     world.camera.camera,
-    world.scene.scene.children,
+    children,
   );
 
   cursor?.position.set(

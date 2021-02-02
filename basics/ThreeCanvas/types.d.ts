@@ -76,6 +76,7 @@ interface GestureControl {
   onDrag?: (event: GestureControlEvent) => void;
   onDragEnd?: (event: GestureControlEvent) => void;
   onDoubleTap?: (event: GestureControlEvent) => void;
+  onMouseScroll?: (event: GestureControlEvent) => void;
   init?: (options: GestureControlInitOptions) => void;
   destroy?: (options: GestureControlDestroyOptions) => void;
   [type: GestureControlType]: (event: GestureControlEvent) => void;
@@ -94,7 +95,8 @@ type GestureControlType =
   | "onDragStart"
   | "onDrag"
   | "onDragEnd"
-  | "onDoubleTap";
+  | "onDoubleTap"
+  | "onMouseScroll";
 
 interface GestureControlEvent {
   touches: TouchTrackerEvent[];
