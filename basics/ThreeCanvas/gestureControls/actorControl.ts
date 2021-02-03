@@ -7,14 +7,8 @@ let hoveringItems: THREE.Intersection[] = [];
 export default {
   name: "actorControl",
   onHover: (props) => {
-    const { summary, world } = props;
-    // get element mouse is hovering
-    const intersections = raycastIntersection(
-      summary.fingersCenter,
-      world,
-      world.camera.camera,
-      world.scene.scene.children,
-    );
+    const { summary, world, intersections } = props;
+
     const intersectedIds = intersections.map((i) => i.object.id);
 
     const hoverIntersections = [];
@@ -63,14 +57,9 @@ export default {
     hoveringItems = intersections;
   },
   onDragStart: (props) => {
-    const { summary, world } = props;
+    const { summary, world, intersections } = props;
     // get element mouse is hovering
-    dragItems = raycastIntersection(
-      summary.fingersCenter,
-      world,
-      world.camera.camera,
-      world.scene.scene.children,
-    );
+    dragItems = intersections;
     let isStopPropagation = false;
 
     for (const [index, intersection] of dragItems.entries()) {

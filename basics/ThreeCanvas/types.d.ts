@@ -103,4 +103,6 @@ interface GestureControlEvent {
   summary: TouchSummary;
   world: World;
   stopPropagation: () => void;
+  intersections: THREE.Intersection[];
+  originalIntersections: THREE.Intersection[];
 }

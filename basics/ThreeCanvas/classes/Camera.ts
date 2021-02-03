@@ -172,7 +172,7 @@ export default class Camera {
   }
 
   onMouseScroll({ summary }: GestureControlEvent) {
-    this.zoomDelta(summary.scaleDeltaInterval);
+    this.zoomDelta(-summary.scaleDeltaInterval);
   }
 
   /**

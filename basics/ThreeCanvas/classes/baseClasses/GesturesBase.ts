@@ -2,11 +2,15 @@ import {
   TouchSummary,
   TouchTrackerEvent,
 } from "../../contexts/TouchTrackerContext";
+import { raycastIntersection } from "../../threeUtils";
 import World from "../World";
 import WorldBase from "./WorldBase";
+import * as THREE from "three";
 
 export default class GesturesBase {
   world: WorldBase;
+  originalInteractions: THREE.Intersection[] = [];
+
   constructor(world: WorldBase) {
     this.world = world;
   }
@@ -95,8 +99,29 @@ export default class GesturesBase {
     {
       touches,
       summary,
-    }: { touches: TouchTrackerEvent[]; summary: TouchSummary },
+      newInteraction,
+      handleInteractions = true,
+    }: {
+      touches: TouchTrackerEvent[];
+      summary: TouchSummary;
+      newInteraction?: boolean;
+      handleInteractions?: boolean;
+    },
   ) {
+    let intersections: THREE.Intersection[] = [];
+    if (handleInteractions) {
+      intersections = raycastIntersection(
+        summary.fingersCenter,
+        this.world,
+        this.world.camera.camera,
+        this.world.scene.scene.children,
+      );
+
+      if (newInteraction) {
+        this.originalInteractions = [...intersections];
+      }
+    }
+
     // controls that has been filtered for this world and sorted
     // based on priority, from highest to lowest
     const controls = Object.values(
@@ -120,6 +145,8 @@ export default class GesturesBase {
         summary,
         world: this.world,
         stopPropagation: () => (isContinue = false),
+        intersections,
+        originalIntersections: this.originalInteractions,
       });
       if (!isContinue) break;
     }
